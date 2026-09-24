@@ -1,0 +1,16 @@
+{
+  "name": "Sky Plus",
+  "short_name": "Sky Plus",
+  "description": "Container ordering and shipment management",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4f7fa",
+  "theme_color": "#1b2a44",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ]
+}
