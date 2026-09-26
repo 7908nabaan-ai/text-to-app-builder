@@ -52,7 +52,7 @@ function StaffOrders() {
   return (
     <div className="space-y-3">
       {data.map((order) => {
-        const profile = (order as { profiles?: { company_name: string | null; contact_name: string | null } | null }).profiles;
+        const profile = (order as unknown as { profiles?: { company_name: string | null; contact_name: string | null } | null }).profiles;
         return (
           <Link key={order.id} to="/staff/orders/$orderId" params={{ orderId: order.id }}>
             <Card className="transition-colors hover:border-accent">
@@ -84,7 +84,7 @@ function CustomerOrder({ userId }: { userId: string }) {
         .from("orders")
         .select("*")
         .eq("customer_id", userId)
-        .in("status", ACTIVE_STATUSES as unknown as string[])
+        .in("status", [...ACTIVE_STATUSES])
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -184,7 +184,7 @@ function CustomerOrder({ userId }: { userId: string }) {
 
   const totals = calcOrderTotals(
     lines.map((line) => ({
-      cbm_per_carton: line.cbm_per_carton,
+      cbmPerCarton: Number(line.cbm_per_carton),
       quantity: line.final_quantity ?? line.current_quantity,
       price: line.negotiated_price,
     })),
@@ -199,11 +199,11 @@ function CustomerOrder({ userId }: { userId: string }) {
           <div className="flex items-center justify-between">
             <div>
               <p className="font-display text-xl font-bold">{order.order_number}</p>
-              <p className="stat-label">Container {formatCbm(order.container_capacity_cbm)} CBM</p>
+              <p className="stat-label">Container {formatCbm(Number(order.container_capacity_cbm))}</p>
             </div>
             <Badge>{STATUS_LABELS[order.status] ?? order.status}</Badge>
           </div>
-          <Progress value={Math.min(totals.utilisation * 100, 100)} />
+          <Progress value={Math.min(totals.utilizationPercent, 100)} />
           <div className="grid grid-cols-3 gap-2 text-center">
             <div>
               <p className="stat-label">Loaded</p>
@@ -218,7 +218,7 @@ function CustomerOrder({ userId }: { userId: string }) {
               <p className="font-semibold">{formatMoney(totals.totalValue)}</p>
             </div>
           </div>
-          {totals.overCapacity && (
+          {totals.isOverCapacity && (
             <p className="text-sm font-medium text-destructive">
               Over container capacity — reduce quantities before submitting.
             </p>
@@ -304,7 +304,7 @@ function CustomerOrder({ userId }: { userId: string }) {
         </Button>
         <Button
           className="h-11"
-          disabled={!editable || lines.length === 0 || totals.overCapacity || submitOrder.isPending}
+          disabled={!editable || lines.length === 0 || totals.isOverCapacity || submitOrder.isPending}
           onClick={() => submitOrder.mutate()}
         >
           {order.status === "draft" ? "Submit order" : "Send update"}

@@ -63,7 +63,7 @@ export async function getOrCreateDraftOrder(customerId: string) {
     .from("orders")
     .select("*")
     .eq("customer_id", customerId)
-    .in("status", ACTIVE_STATUSES as unknown as string[])
+    .in("status", [...ACTIVE_STATUSES])
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
