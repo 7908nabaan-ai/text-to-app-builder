@@ -80,7 +80,7 @@ function CategoriesBody() {
   });
 
   const save = useMutation({
-    mutationFn: async (values: Omit<Category, "id"> & { id?: string }) => {
+    mutationFn: async (values: Omit<Category, "id"> & { id?: string | undefined }) => {
       if (values.id) {
         const { error } = await supabase
           .from("categories")
