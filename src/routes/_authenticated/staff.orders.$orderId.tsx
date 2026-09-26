@@ -101,7 +101,11 @@ function OrderBody({ orderId }: { orderId: string }) {
       quantity?: number;
       price?: number;
     }) => {
-      const patch: Record<string, number> = {};
+      const patch: {
+        proposed_quantity?: number;
+        current_quantity?: number;
+        negotiated_price?: number;
+      } = {};
       if (quantity !== undefined && quantity !== line.current_quantity) {
         patch.proposed_quantity = quantity;
         patch.current_quantity = quantity;
