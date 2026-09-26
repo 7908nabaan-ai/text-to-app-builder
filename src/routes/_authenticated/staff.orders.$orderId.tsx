@@ -101,7 +101,11 @@ function OrderBody({ orderId }: { orderId: string }) {
       quantity?: number;
       price?: number;
     }) => {
-      const patch: Record<string, number> = {};
+      const patch: {
+        proposed_quantity?: number;
+        current_quantity?: number;
+        negotiated_price?: number;
+      } = {};
       if (quantity !== undefined && quantity !== line.current_quantity) {
         patch.proposed_quantity = quantity;
         patch.current_quantity = quantity;
@@ -131,9 +135,14 @@ function OrderBody({ orderId }: { orderId: string }) {
   });
 
   const setStatus = useMutation({
-    mutationFn: async (status: string) => {
+    mutationFn: async (status: (typeof NEXT_STATUSES)[number]) => {
       if (!order) return;
-      const patch: Record<string, unknown> = { status };
+      const patch: {
+        status: (typeof NEXT_STATUSES)[number];
+        finalized_at?: string;
+        is_locked?: boolean;
+        shipped_at?: string;
+      } = { status };
       if (status === "confirmed") {
         patch.finalized_at = new Date().toISOString();
         patch.is_locked = true;
@@ -177,13 +186,13 @@ function OrderBody({ orderId }: { orderId: string }) {
 
   if (!order) return null;
 
-  const profile = (order as {
+  const profile = (order as unknown as {
     profiles?: { company_name: string | null; contact_name: string | null; shipping_destination: string | null } | null;
   }).profiles;
 
   const totals = calcOrderTotals(
     lines.map((line) => ({
-      cbm_per_carton: line.cbm_per_carton,
+      cbmPerCarton: Number(line.cbm_per_carton),
       quantity: line.final_quantity ?? line.current_quantity,
       price: line.negotiated_price,
     })),
@@ -204,7 +213,7 @@ function OrderBody({ orderId }: { orderId: string }) {
             </div>
             <Badge>{STATUS_LABELS[order.status] ?? order.status}</Badge>
           </div>
-          <Progress value={Math.min(totals.utilisation * 100, 100)} />
+          <Progress value={Math.min(totals.utilizationPercent, 100)} />
           <div className="grid grid-cols-3 gap-2 text-center">
             <div>
               <p className="stat-label">Loaded</p>
@@ -271,7 +280,7 @@ function OrderBody({ orderId }: { orderId: string }) {
             </div>
             <p className="text-sm text-muted-foreground">
               Catalog price {formatMoney(line.catalog_price)} ·{" "}
-              {formatCbm(line.cbm_per_carton * line.current_quantity)} CBM
+              {formatCbm(line.cbm_per_carton * line.current_quantity)}
             </p>
           </CardContent>
         </Card>

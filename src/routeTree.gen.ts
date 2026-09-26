@@ -20,6 +20,9 @@ import { Route as AuthenticatedInvoicesRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
+import { Route as AuthenticatedStaffCategoriesRouteImport } from './routes/_authenticated/staff.categories'
+import { Route as AuthenticatedStaffCustomersRouteImport } from './routes/_authenticated/staff.customers'
+import { Route as AuthenticatedStaffProductsRouteImport } from './routes/_authenticated/staff.products'
 import { Route as AuthenticatedStaffSettingsRouteImport } from './routes/_authenticated/staff.settings'
 import { Route as AuthenticatedStaffOrdersOrderIdRouteImport } from './routes/_authenticated/staff.orders.$orderId'
 
@@ -78,6 +81,24 @@ const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
   path: '/reports',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedStaffCategoriesRoute =
+  AuthenticatedStaffCategoriesRouteImport.update({
+    id: '/staff/categories',
+    path: '/staff/categories',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedStaffCustomersRoute =
+  AuthenticatedStaffCustomersRouteImport.update({
+    id: '/staff/customers',
+    path: '/staff/customers',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedStaffProductsRoute =
+  AuthenticatedStaffProductsRouteImport.update({
+    id: '/staff/products',
+    path: '/staff/products',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedStaffSettingsRoute =
   AuthenticatedStaffSettingsRouteImport.update({
     id: '/staff/settings',
@@ -102,6 +123,9 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/reports': typeof AuthenticatedReportsRoute
+  '/staff/categories': typeof AuthenticatedStaffCategoriesRoute
+  '/staff/customers': typeof AuthenticatedStaffCustomersRoute
+  '/staff/products': typeof AuthenticatedStaffProductsRoute
   '/staff/settings': typeof AuthenticatedStaffSettingsRoute
   '/staff/orders/$orderId': typeof AuthenticatedStaffOrdersOrderIdRoute
 }
@@ -116,6 +140,9 @@ export interface FileRoutesByTo {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/reports': typeof AuthenticatedReportsRoute
+  '/staff/categories': typeof AuthenticatedStaffCategoriesRoute
+  '/staff/customers': typeof AuthenticatedStaffCustomersRoute
+  '/staff/products': typeof AuthenticatedStaffProductsRoute
   '/staff/settings': typeof AuthenticatedStaffSettingsRoute
   '/staff/orders/$orderId': typeof AuthenticatedStaffOrdersOrderIdRoute
 }
@@ -132,6 +159,9 @@ export interface FileRoutesById {
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
+  '/_authenticated/staff/categories': typeof AuthenticatedStaffCategoriesRoute
+  '/_authenticated/staff/customers': typeof AuthenticatedStaffCustomersRoute
+  '/_authenticated/staff/products': typeof AuthenticatedStaffProductsRoute
   '/_authenticated/staff/settings': typeof AuthenticatedStaffSettingsRoute
   '/_authenticated/staff/orders/$orderId': typeof AuthenticatedStaffOrdersOrderIdRoute
 }
@@ -148,6 +178,9 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/profile'
     | '/reports'
+    | '/staff/categories'
+    | '/staff/customers'
+    | '/staff/products'
     | '/staff/settings'
     | '/staff/orders/$orderId'
   fileRoutesByTo: FileRoutesByTo
@@ -162,6 +195,9 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/profile'
     | '/reports'
+    | '/staff/categories'
+    | '/staff/customers'
+    | '/staff/products'
     | '/staff/settings'
     | '/staff/orders/$orderId'
   id:
@@ -177,6 +213,9 @@ export interface FileRouteTypes {
     | '/_authenticated/notifications'
     | '/_authenticated/profile'
     | '/_authenticated/reports'
+    | '/_authenticated/staff/categories'
+    | '/_authenticated/staff/customers'
+    | '/_authenticated/staff/products'
     | '/_authenticated/staff/settings'
     | '/_authenticated/staff/orders/$orderId'
   fileRoutesById: FileRoutesById
@@ -267,6 +306,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReportsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/staff/categories': {
+      id: '/_authenticated/staff/categories'
+      path: '/staff/categories'
+      fullPath: '/staff/categories'
+      preLoaderRoute: typeof AuthenticatedStaffCategoriesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/staff/customers': {
+      id: '/_authenticated/staff/customers'
+      path: '/staff/customers'
+      fullPath: '/staff/customers'
+      preLoaderRoute: typeof AuthenticatedStaffCustomersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/staff/products': {
+      id: '/_authenticated/staff/products'
+      path: '/staff/products'
+      fullPath: '/staff/products'
+      preLoaderRoute: typeof AuthenticatedStaffProductsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/staff/settings': {
       id: '/_authenticated/staff/settings'
       path: '/staff/settings'
@@ -292,6 +352,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
+  AuthenticatedStaffCategoriesRoute: typeof AuthenticatedStaffCategoriesRoute
+  AuthenticatedStaffCustomersRoute: typeof AuthenticatedStaffCustomersRoute
+  AuthenticatedStaffProductsRoute: typeof AuthenticatedStaffProductsRoute
   AuthenticatedStaffSettingsRoute: typeof AuthenticatedStaffSettingsRoute
   AuthenticatedStaffOrdersOrderIdRoute: typeof AuthenticatedStaffOrdersOrderIdRoute
 }
@@ -304,6 +367,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
+  AuthenticatedStaffCategoriesRoute: AuthenticatedStaffCategoriesRoute,
+  AuthenticatedStaffCustomersRoute: AuthenticatedStaffCustomersRoute,
+  AuthenticatedStaffProductsRoute: AuthenticatedStaffProductsRoute,
   AuthenticatedStaffSettingsRoute: AuthenticatedStaffSettingsRoute,
   AuthenticatedStaffOrdersOrderIdRoute: AuthenticatedStaffOrdersOrderIdRoute,
 }
