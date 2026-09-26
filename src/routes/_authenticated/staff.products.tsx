@@ -109,7 +109,7 @@ function ProductsBody() {
 
   const save = useMutation({
     mutationFn: async (values: {
-      id?: string;
+      id?: string | undefined;
       sku: string;
       name: string;
       category_id: string | null;
