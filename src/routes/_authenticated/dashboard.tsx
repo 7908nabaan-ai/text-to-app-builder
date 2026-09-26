@@ -274,7 +274,7 @@ function CustomerOrder({ userId }: { userId: string }) {
                       </Button>
                     </div>
                     <div className="text-right text-sm text-muted-foreground">
-                      <p>{formatCbm(line.cbm_per_carton * quantity)} CBM</p>
+                      <p>{formatCbm(line.cbm_per_carton * quantity)}</p>
                       <p className="font-medium text-foreground">
                         {formatMoney(line.negotiated_price * quantity)}
                       </p>

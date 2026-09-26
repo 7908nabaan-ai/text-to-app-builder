@@ -56,7 +56,7 @@ function ReportsBody() {
     { label: "Orders", value: String(data?.orderCount ?? 0) },
     { label: "Shipped containers", value: String(data?.shipped ?? 0) },
     { label: "Invoiced value", value: formatMoney(data?.invoicedValue ?? 0) },
-    { label: "Invoiced volume", value: `${formatCbm(data?.invoicedCbm ?? 0)} CBM` },
+    { label: "Invoiced volume", value: formatCbm(data?.invoicedCbm ?? 0) },
     { label: "Payments received", value: formatMoney(data?.paid ?? 0) },
     {
       label: "Outstanding balance",

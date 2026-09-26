@@ -185,7 +185,7 @@ function CatalogBody({ userId }: { userId: string }) {
                   <Badge variant="secondary">{formatMoney(product.default_price)}</Badge>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {formatCbm(product.cbm_per_carton)} CBM per {product.unit.toLowerCase()}
+                  {formatCbm(product.cbm_per_carton)} per {product.unit.toLowerCase()}
                 </p>
                 <Button
                   className="h-11 w-full"

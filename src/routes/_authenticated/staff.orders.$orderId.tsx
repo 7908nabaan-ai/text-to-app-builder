@@ -280,7 +280,7 @@ function OrderBody({ orderId }: { orderId: string }) {
             </div>
             <p className="text-sm text-muted-foreground">
               Catalog price {formatMoney(line.catalog_price)} ·{" "}
-              {formatCbm(line.cbm_per_carton * line.current_quantity)} CBM
+              {formatCbm(line.cbm_per_carton * line.current_quantity)}
             </p>
           </CardContent>
         </Card>
