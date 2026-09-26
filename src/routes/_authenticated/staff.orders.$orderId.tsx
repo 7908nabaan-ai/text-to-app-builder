@@ -186,13 +186,13 @@ function OrderBody({ orderId }: { orderId: string }) {
 
   if (!order) return null;
 
-  const profile = (order as {
+  const profile = (order as unknown as {
     profiles?: { company_name: string | null; contact_name: string | null; shipping_destination: string | null } | null;
   }).profiles;
 
   const totals = calcOrderTotals(
     lines.map((line) => ({
-      cbm_per_carton: line.cbm_per_carton,
+      cbmPerCarton: Number(line.cbm_per_carton),
       quantity: line.final_quantity ?? line.current_quantity,
       price: line.negotiated_price,
     })),
@@ -213,7 +213,7 @@ function OrderBody({ orderId }: { orderId: string }) {
             </div>
             <Badge>{STATUS_LABELS[order.status] ?? order.status}</Badge>
           </div>
-          <Progress value={Math.min(totals.utilisation * 100, 100)} />
+          <Progress value={Math.min(totals.utilizationPercent, 100)} />
           <div className="grid grid-cols-3 gap-2 text-center">
             <div>
               <p className="stat-label">Loaded</p>
