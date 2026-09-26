@@ -135,9 +135,14 @@ function OrderBody({ orderId }: { orderId: string }) {
   });
 
   const setStatus = useMutation({
-    mutationFn: async (status: string) => {
+    mutationFn: async (status: (typeof NEXT_STATUSES)[number]) => {
       if (!order) return;
-      const patch: Record<string, unknown> = { status };
+      const patch: {
+        status: (typeof NEXT_STATUSES)[number];
+        finalized_at?: string;
+        is_locked?: boolean;
+        shipped_at?: string;
+      } = { status };
       if (status === "confirmed") {
         patch.finalized_at = new Date().toISOString();
         patch.is_locked = true;
