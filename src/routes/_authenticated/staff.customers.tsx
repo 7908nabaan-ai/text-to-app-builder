@@ -147,22 +147,24 @@ function CustomersBody() {
                     </Link>
                   )}
 
-                  {customer.phone && (
-                    <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2">
+                    {whatsappLink(customer.phone) && (
                       <Button asChild size="sm" variant="outline">
                         <a
-                          href={whatsappLink(customer.phone)}
+                          href={whatsappLink(customer.phone)!}
                           target="_blank"
                           rel="noopener noreferrer"
                         >
                           WhatsApp
                         </a>
                       </Button>
+                    )}
+                    {telLink(customer.phone) && (
                       <Button asChild size="sm" variant="outline">
-                        <a href={telLink(customer.phone)}>Call</a>
+                        <a href={telLink(customer.phone)!}>Call</a>
                       </Button>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             );
