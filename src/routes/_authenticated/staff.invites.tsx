@@ -224,6 +224,9 @@ function InvitesPage() {
           })}
         </div>
       )}
+        </>
+      )}
     </Page>
   );
 }
+
