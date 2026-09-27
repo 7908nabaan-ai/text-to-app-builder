@@ -133,8 +133,11 @@ function AuthPage() {
           <CardDescription>
             {mode === "reset"
               ? "We'll email you a link to set a new password."
-              : "Container ordering and shipment management."}
+              : mode === "signup"
+                ? `You were invited to Sky Plus${invite?.companyName ? ` as ${invite.companyName}` : ""}.`
+                : "Container ordering and shipment management."}
           </CardDescription>
+
         </CardHeader>
         <CardContent className="space-y-4">
           <form onSubmit={handleSubmit} className="space-y-4">
