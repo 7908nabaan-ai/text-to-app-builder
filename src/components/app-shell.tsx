@@ -9,8 +9,10 @@ import {
   LayoutGrid,
   LogOut,
   Package,
+  Send,
   Settings,
   Ship,
+
   ShoppingCart,
   Tags,
   UserRound,
