@@ -230,18 +230,10 @@ function AuthPage() {
                 <button type="button" className="underline" onClick={() => setMode("reset")}>
                   Forgot your password?
                 </button>
-                <p>
-                  New customer?{" "}
-                  <button
-                    type="button"
-                    className="font-medium text-primary underline"
-                    onClick={() => setMode("signup")}
-                  >
-                    Create an account
-                  </button>
-                </p>
+                <p>New customers can only join with an invitation link from Sky Plus.</p>
               </>
             )}
+
             {mode !== "signin" && (
               <button
                 type="button"
