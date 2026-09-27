@@ -130,7 +130,10 @@ function InvitesPage() {
       title="Customer invitations"
       description="Customers can only create an account with a link you send them."
     >
+      {() => (
+        <>
       <Card className="mb-5">
+
         <CardContent className="space-y-3 pt-5">
           <div className="space-y-1.5">
             <Label htmlFor="invite-email">Customer email</Label>
