@@ -1,8 +1,10 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
+import { checkInvite, type InviteCheck } from "@/lib/invites.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Ship } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
+  validateSearch: z.object({ invite: z.string().optional() }),
   head: () => ({
     meta: [
       { title: "Sign in — Sky Plus" },
@@ -31,6 +34,7 @@ type Mode = "signin" | "signup" | "reset";
 
 function AuthPage() {
   const navigate = useNavigate();
+  const { invite: inviteToken } = Route.useSearch();
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -38,12 +42,33 @@ function AuthPage() {
   const [company, setCompany] = useState("");
   const [phone, setPhone] = useState("");
   const [busy, setBusy] = useState(false);
+  const [invite, setInvite] = useState<InviteCheck | null>(null);
 
   useEffect(() => {
     void supabase.auth.getSession().then(({ data }) => {
       if (data.session) navigate({ to: "/dashboard" });
     });
   }, [navigate]);
+
+  useEffect(() => {
+    if (!inviteToken) {
+      setInvite(null);
+      return;
+    }
+    void checkInvite({ data: { token: inviteToken } }).then((result) => {
+      setInvite(result);
+      if (result.valid) {
+        setMode("signup");
+        setEmail(result.email ?? "");
+        setContactName(result.contactName ?? "");
+        setCompany(result.companyName ?? "");
+      } else {
+        setMode("signin");
+        toast.error(result.reason ?? "This invitation link is not valid.");
+      }
+    });
+  }, [inviteToken]);
+
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
