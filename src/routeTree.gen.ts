@@ -22,6 +22,7 @@ import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedStaffCategoriesRouteImport } from './routes/_authenticated/staff.categories'
 import { Route as AuthenticatedStaffCustomersRouteImport } from './routes/_authenticated/staff.customers'
+import { Route as AuthenticatedStaffInvitesRouteImport } from './routes/_authenticated/staff.invites'
 import { Route as AuthenticatedStaffProductsRouteImport } from './routes/_authenticated/staff.products'
 import { Route as AuthenticatedStaffSettingsRouteImport } from './routes/_authenticated/staff.settings'
 import { Route as AuthenticatedStaffOrdersOrderIdRouteImport } from './routes/_authenticated/staff.orders.$orderId'
@@ -93,6 +94,12 @@ const AuthenticatedStaffCustomersRoute =
     path: '/staff/customers',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedStaffInvitesRoute =
+  AuthenticatedStaffInvitesRouteImport.update({
+    id: '/staff/invites',
+    path: '/staff/invites',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedStaffProductsRoute =
   AuthenticatedStaffProductsRouteImport.update({
     id: '/staff/products',
@@ -125,6 +132,7 @@ export interface FileRoutesByFullPath {
   '/reports': typeof AuthenticatedReportsRoute
   '/staff/categories': typeof AuthenticatedStaffCategoriesRoute
   '/staff/customers': typeof AuthenticatedStaffCustomersRoute
+  '/staff/invites': typeof AuthenticatedStaffInvitesRoute
   '/staff/products': typeof AuthenticatedStaffProductsRoute
   '/staff/settings': typeof AuthenticatedStaffSettingsRoute
   '/staff/orders/$orderId': typeof AuthenticatedStaffOrdersOrderIdRoute
@@ -142,6 +150,7 @@ export interface FileRoutesByTo {
   '/reports': typeof AuthenticatedReportsRoute
   '/staff/categories': typeof AuthenticatedStaffCategoriesRoute
   '/staff/customers': typeof AuthenticatedStaffCustomersRoute
+  '/staff/invites': typeof AuthenticatedStaffInvitesRoute
   '/staff/products': typeof AuthenticatedStaffProductsRoute
   '/staff/settings': typeof AuthenticatedStaffSettingsRoute
   '/staff/orders/$orderId': typeof AuthenticatedStaffOrdersOrderIdRoute
@@ -161,6 +170,7 @@ export interface FileRoutesById {
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/staff/categories': typeof AuthenticatedStaffCategoriesRoute
   '/_authenticated/staff/customers': typeof AuthenticatedStaffCustomersRoute
+  '/_authenticated/staff/invites': typeof AuthenticatedStaffInvitesRoute
   '/_authenticated/staff/products': typeof AuthenticatedStaffProductsRoute
   '/_authenticated/staff/settings': typeof AuthenticatedStaffSettingsRoute
   '/_authenticated/staff/orders/$orderId': typeof AuthenticatedStaffOrdersOrderIdRoute
@@ -180,6 +190,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/staff/categories'
     | '/staff/customers'
+    | '/staff/invites'
     | '/staff/products'
     | '/staff/settings'
     | '/staff/orders/$orderId'
@@ -197,6 +208,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/staff/categories'
     | '/staff/customers'
+    | '/staff/invites'
     | '/staff/products'
     | '/staff/settings'
     | '/staff/orders/$orderId'
@@ -215,6 +227,7 @@ export interface FileRouteTypes {
     | '/_authenticated/reports'
     | '/_authenticated/staff/categories'
     | '/_authenticated/staff/customers'
+    | '/_authenticated/staff/invites'
     | '/_authenticated/staff/products'
     | '/_authenticated/staff/settings'
     | '/_authenticated/staff/orders/$orderId'
@@ -320,6 +333,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStaffCustomersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/staff/invites': {
+      id: '/_authenticated/staff/invites'
+      path: '/staff/invites'
+      fullPath: '/staff/invites'
+      preLoaderRoute: typeof AuthenticatedStaffInvitesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/staff/products': {
       id: '/_authenticated/staff/products'
       path: '/staff/products'
@@ -354,6 +374,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedStaffCategoriesRoute: typeof AuthenticatedStaffCategoriesRoute
   AuthenticatedStaffCustomersRoute: typeof AuthenticatedStaffCustomersRoute
+  AuthenticatedStaffInvitesRoute: typeof AuthenticatedStaffInvitesRoute
   AuthenticatedStaffProductsRoute: typeof AuthenticatedStaffProductsRoute
   AuthenticatedStaffSettingsRoute: typeof AuthenticatedStaffSettingsRoute
   AuthenticatedStaffOrdersOrderIdRoute: typeof AuthenticatedStaffOrdersOrderIdRoute
@@ -369,6 +390,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedStaffCategoriesRoute: AuthenticatedStaffCategoriesRoute,
   AuthenticatedStaffCustomersRoute: AuthenticatedStaffCustomersRoute,
+  AuthenticatedStaffInvitesRoute: AuthenticatedStaffInvitesRoute,
   AuthenticatedStaffProductsRoute: AuthenticatedStaffProductsRoute,
   AuthenticatedStaffSettingsRoute: AuthenticatedStaffSettingsRoute,
   AuthenticatedStaffOrdersOrderIdRoute: AuthenticatedStaffOrdersOrderIdRoute,

@@ -33,10 +33,12 @@ const customerNav: NavItem[] = [
 const staffNav: NavItem[] = [
   { to: "/dashboard", label: "Orders", icon: ShoppingCart },
   { to: "/staff/customers", label: "Customers", icon: Users },
+  { to: "/staff/invites", label: "Invites", icon: Send },
   { to: "/staff/products", label: "Products", icon: Package },
   { to: "/staff/categories", label: "Categories", icon: Tags },
   { to: "/staff/settings", label: "Settings", icon: Settings },
 ];
+
 
 const secondaryNav: NavItem[] = [
   { to: "/reports", label: "Reports", icon: Boxes },
