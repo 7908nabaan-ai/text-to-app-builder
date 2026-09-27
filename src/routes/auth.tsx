@@ -1,8 +1,10 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
+import { checkInvite, type InviteCheck } from "@/lib/invites.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Ship } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
+  validateSearch: z.object({ invite: z.string().optional() }),
   head: () => ({
     meta: [
       { title: "Sign in — Sky Plus" },
@@ -31,6 +34,7 @@ type Mode = "signin" | "signup" | "reset";
 
 function AuthPage() {
   const navigate = useNavigate();
+  const { invite: inviteToken } = Route.useSearch();
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -38,12 +42,33 @@ function AuthPage() {
   const [company, setCompany] = useState("");
   const [phone, setPhone] = useState("");
   const [busy, setBusy] = useState(false);
+  const [invite, setInvite] = useState<InviteCheck | null>(null);
 
   useEffect(() => {
     void supabase.auth.getSession().then(({ data }) => {
       if (data.session) navigate({ to: "/dashboard" });
     });
   }, [navigate]);
+
+  useEffect(() => {
+    if (!inviteToken) {
+      setInvite(null);
+      return;
+    }
+    void checkInvite({ data: { token: inviteToken } }).then((result) => {
+      setInvite(result);
+      if (result.valid) {
+        setMode("signup");
+        setEmail(result.email ?? "");
+        setContactName(result.contactName ?? "");
+        setCompany(result.companyName ?? "");
+      } else {
+        setMode("signin");
+        toast.error(result.reason ?? "This invitation link is not valid.");
+      }
+    });
+  }, [inviteToken]);
+
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -108,8 +133,11 @@ function AuthPage() {
           <CardDescription>
             {mode === "reset"
               ? "We'll email you a link to set a new password."
-              : "Container ordering and shipment management."}
+              : mode === "signup"
+                ? `You were invited to Sky Plus${invite?.companyName ? ` as ${invite.companyName}` : ""}.`
+                : "Container ordering and shipment management."}
           </CardDescription>
+
         </CardHeader>
         <CardContent className="space-y-4">
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -205,18 +233,10 @@ function AuthPage() {
                 <button type="button" className="underline" onClick={() => setMode("reset")}>
                   Forgot your password?
                 </button>
-                <p>
-                  New customer?{" "}
-                  <button
-                    type="button"
-                    className="font-medium text-primary underline"
-                    onClick={() => setMode("signup")}
-                  >
-                    Create an account
-                  </button>
-                </p>
+                <p>New customers can only join with an invitation link from Sky Plus.</p>
               </>
             )}
+
             {mode !== "signin" && (
               <button
                 type="button"

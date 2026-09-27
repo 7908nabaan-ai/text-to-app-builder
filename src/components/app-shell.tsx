@@ -9,8 +9,10 @@ import {
   LayoutGrid,
   LogOut,
   Package,
+  Send,
   Settings,
   Ship,
+
   ShoppingCart,
   Tags,
   UserRound,
@@ -33,10 +35,12 @@ const customerNav: NavItem[] = [
 const staffNav: NavItem[] = [
   { to: "/dashboard", label: "Orders", icon: ShoppingCart },
   { to: "/staff/customers", label: "Customers", icon: Users },
+  { to: "/staff/invites", label: "Invites", icon: Send },
   { to: "/staff/products", label: "Products", icon: Package },
   { to: "/staff/categories", label: "Categories", icon: Tags },
   { to: "/staff/settings", label: "Settings", icon: Settings },
 ];
+
 
 const secondaryNav: NavItem[] = [
   { to: "/reports", label: "Reports", icon: Boxes },
@@ -102,7 +106,7 @@ export function AppShell({
       <main className="mx-auto w-full max-w-6xl px-4 py-5">{children}</main>
 
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card md:hidden">
-        <div className="grid grid-cols-5">
+        <div className={cn("grid", isStaff ? "grid-cols-6" : "grid-cols-5")}>
           {primary.map((item) => {
             const Icon = item.icon;
             const active = pathname.startsWith(item.to);
