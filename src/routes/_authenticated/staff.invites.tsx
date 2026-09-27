@@ -109,10 +109,13 @@ function InvitesPage() {
   if (!isStaff) {
     return (
       <Page title="Invitations">
-        <EmptyState title="Staff only" description="Only Sky Plus staff can invite customers." />
+        {() => (
+          <EmptyState title="Staff only" description="Only Sky Plus staff can invite customers." />
+        )}
       </Page>
     );
   }
+
 
   const statusOf = (invite: Invite) => {
     if (invite.revoked_at) return { label: "Cancelled", variant: "outline" as const };
