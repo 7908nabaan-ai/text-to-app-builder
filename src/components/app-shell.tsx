@@ -106,7 +106,7 @@ export function AppShell({
       <main className="mx-auto w-full max-w-6xl px-4 py-5">{children}</main>
 
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card md:hidden">
-        <div className="grid grid-cols-5">
+        <div className={cn("grid", isStaff ? "grid-cols-6" : "grid-cols-5")}>
           {primary.map((item) => {
             const Icon = item.icon;
             const active = pathname.startsWith(item.to);
