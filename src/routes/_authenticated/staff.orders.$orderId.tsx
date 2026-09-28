@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { calcOrderTotals, formatCbm, formatMoney } from "@/lib/calc";
 import { STATUS_LABELS, logOrderEvent, type OrderLine } from "@/lib/orders";
+import { OrderFinance } from "@/components/order-finance";
 
 export const Route = createFileRoute("/_authenticated/staff/orders/$orderId")({
   head: () => ({
@@ -285,6 +286,9 @@ function OrderBody({ orderId }: { orderId: string }) {
           </CardContent>
         </Card>
       ))}
+
+      <OrderFinance orderId={orderId} customerId={order.customer_id} isStaff />
+
 
       <Card>
         <CardContent className="space-y-2 pt-5">

@@ -728,6 +728,15 @@ export type Database = {
         Returns: boolean
       }
       is_staff: { Args: never; Returns: boolean }
+      issue_invoice: {
+        Args: {
+          _advance_amount?: number
+          _advance_percent?: number
+          _kind: Database["public"]["Enums"]["invoice_kind"]
+          _order_id: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "staff" | "customer"
