@@ -59,8 +59,7 @@ export function OrderFinance({ orderId, customerId, isStaff }: Props) {
       const { error } = await supabase.rpc("issue_invoice", {
         _order_id: orderId,
         _kind: kind,
-        _advance_percent: advanceMode === "percent" ? value : undefined,
-        _advance_amount: advanceMode === "amount" ? value : undefined,
+        ...(advanceMode === "percent" ? { _advance_percent: value } : { _advance_amount: value }),
       });
       if (error) throw error;
     },
