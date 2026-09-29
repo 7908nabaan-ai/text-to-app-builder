@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -226,6 +226,9 @@ function ProductsBody() {
           value={search}
           onChange={(event) => setSearch(event.target.value)}
         />
+        <Button asChild variant="outline" className="h-11">
+          <Link to="/staff/import">Import from file</Link>
+        </Button>
         <Dialog
           open={open}
           onOpenChange={(next) => {
