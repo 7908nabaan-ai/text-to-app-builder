@@ -7,6 +7,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatCbm, formatMoney } from "@/lib/calc";
 import { OrderFinance } from "@/components/order-finance";
+import { Button } from "@/components/ui/button";
+import { downloadExcel, downloadPdf } from "@/lib/exports";
 
 export const Route = createFileRoute("/_authenticated/invoices")({
   head: () => ({
@@ -89,7 +91,7 @@ function InvoiceDetail({
   invoice,
   isStaff,
 }: {
-  invoice: { id: string; order_id: string; customer_id: string; currency: string; total_cbm: number; container_code: string | null; advance_amount: number; payment_instructions: string | null };
+  invoice: { id: string; order_id: string; customer_id: string; currency: string; total_cbm: number; container_code: string | null; advance_amount: number; payment_instructions: string | null; invoice_number: string; version: number; kind: string; issue_date: string; total_value: number; state: string };
   isStaff: boolean;
 }) {
   const { data: lines = [] } = useQuery({
@@ -100,8 +102,38 @@ function InvoiceDetail({
       return data;
     },
   });
+  const exportPdf = async () => {
+    const { data: pays } = await supabase.from("payments").select("amount, status").eq("order_id", invoice.order_id);
+    const paid = (pays ?? []).filter((p) => p.status === "confirmed").reduce((s, p) => s + Number(p.amount), 0);
+    const m = (n: number) => formatMoney(n, invoice.currency);
+    downloadPdf(`${invoice.invoice_number}-v${invoice.version}.pdf`, {
+      title: `${invoice.kind === "proforma" ? "Proforma" : "Commercial"} invoice ${invoice.invoice_number} v${invoice.version}`,
+      subtitle: [
+        `Date: ${new Date(invoice.issue_date).toLocaleDateString()}   Status: ${invoice.state}`,
+        `Container: ${invoice.container_code ?? "-"}   Volume: ${formatCbm(Number(invoice.total_cbm))}`,
+      ],
+      tables: [{
+        title: "",
+        head: ["Code", "Product", "Qty", "Price", "CBM", "Subtotal"],
+        rows: lines.map((l) => [l.sku, l.product_name, l.quantity, m(Number(l.price)), Number(l.total_cbm).toFixed(3), m(Number(l.subtotal))]),
+      }, {
+        title: "Summary",
+        head: ["Total value", "Advance", "Paid", "Balance due"],
+        rows: [[m(Number(invoice.total_value)), m(Number(invoice.advance_amount)), m(paid), m(Number(invoice.total_value) - paid)]],
+      }],
+      footer: invoice.payment_instructions ? ["Payment instructions:", invoice.payment_instructions] : [],
+    });
+  };
   return (
     <div className="space-y-3 border-t pt-3">
+      <div className="flex gap-2">
+        <Button size="sm" variant="outline" onClick={() => void exportPdf()}>Download PDF</Button>
+        <Button size="sm" variant="outline" onClick={() => downloadExcel(`${invoice.invoice_number}-v${invoice.version}.xlsx`, [{
+          title: "Invoice",
+          head: ["Code", "Product", "Unit", "Qty", "Price", "CBM", "Subtotal"],
+          rows: lines.map((l) => [l.sku, l.product_name, l.unit, l.quantity, Number(l.price), Number(l.total_cbm), Number(l.subtotal)]),
+        }])}>Download Excel</Button>
+      </div>
       <p className="text-sm text-muted-foreground">
         {invoice.container_code ?? "Container"} · {formatCbm(Number(invoice.total_cbm))} · advance{" "}
         {formatMoney(Number(invoice.advance_amount), invoice.currency)}
