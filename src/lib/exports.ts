@@ -2,7 +2,7 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 
-export type ExportTable = { title: string; head: string[]; rows: (string | number)[][] };
+export type ExportTable = { title: string; head: string[]; rows: (string | number | null)[][] };
 
 export function downloadExcel(filename: string, sheets: ExportTable[]) {
   const wb = XLSX.utils.book_new();
@@ -38,7 +38,7 @@ export function downloadPdf(
     autoTable(doc, {
       startY: y,
       head: [t.head],
-      body: t.rows.map((r) => r.map(String)),
+      body: t.rows.map((r) => r.map((c) => (c === null ? "" : String(c)))),
       styles: { fontSize: 8 },
       headStyles: { fillColor: [27, 42, 68] },
     });

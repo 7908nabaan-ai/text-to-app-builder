@@ -100,14 +100,14 @@ function ImportBody() {
       const parsed: Row[] = norm.map((r, i) => {
         const errors: string[] = [];
         const warnings: string[] = [];
-        const sku = String(r.sku ?? "").trim();
-        const name = String(r.name ?? "").trim();
-        const length = num(r.length_cm);
-        const width = num(r.width_cm);
-        const height = num(r.height_cm);
-        let cbm = num(r.cbm_per_carton ?? r.cbm);
+        const sku = String(r["sku"] ?? "").trim();
+        const name = String(r["name"] ?? "").trim();
+        const length = num(r["length_cm"]);
+        const width = num(r["width_cm"]);
+        const height = num(r["height_cm"]);
+        let cbm = num(r["cbm_per_carton"] ?? r["cbm"]);
         if ((cbm === null || cbm === 0) && length && width && height) cbm = Number(((length * width * height) / 1_000_000).toFixed(4));
-        const price = num(r.price);
+        const price = num(r["price"]);
         if (!sku) errors.push("Missing product code");
         if (!name) errors.push("Missing name");
         if (cbm === null || Number.isNaN(cbm) || cbm <= 0) errors.push("Invalid volume");
@@ -117,15 +117,15 @@ function ImportBody() {
           if (seen.has(key)) errors.push(`Duplicate code (also row ${seen.get(key)})`);
           else seen.set(key, i + 2);
         }
-        const imageName = String(r.image ?? "").trim();
+        const imageName = String(r["image"] ?? "").trim();
         const image = imageName ? images.get(imageName.split("/").pop()!.toLowerCase()) ?? null : null;
         if (imageName && !image) warnings.push("Photo not found in ZIP");
         const exists = existingSkus.has(sku.toLowerCase());
         if (exists) warnings.push("Will update existing product");
         return {
-          line: i + 2, sku, name, category: String(r.category ?? "").trim(),
-          cbm: cbm ?? 0, price: price ?? 0, unit: String(r.unit ?? "").trim() || "Carton",
-          description: String(r.description ?? "").trim(), length, width, height,
+          line: i + 2, sku, name, category: String(r["category"] ?? "").trim(),
+          cbm: cbm ?? 0, price: price ?? 0, unit: String(r["unit"] ?? "").trim() || "Carton",
+          description: String(r["description"] ?? "").trim(), length, width, height,
           imageName, image, errors, warnings, exists,
         };
       });
@@ -146,7 +146,7 @@ function ImportBody() {
     try {
       const { data: cats } = await supabase.from("categories").select("id, name");
       const catMap = new Map((cats ?? []).map((c) => [c.name.toLowerCase(), c.id]));
-      for (const name of new Set(valid.map((r) => r.category).filter(Boolean))) {
+      for (const name of new Set(valid.map((r) => r["category"]).filter(Boolean))) {
         if (catMap.has(name.toLowerCase())) continue;
         const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + "-" + Math.random().toString(36).slice(2, 6);
         const { data, error } = await supabase.from("categories").insert({ name, slug }).select("id").single();
@@ -157,15 +157,15 @@ function ImportBody() {
       const payload = [];
       for (const r of valid) {
         let image_path: string | undefined;
-        if (r.image) {
+        if (r["image"]) {
           const ext = r.imageName.split(".").pop()!.toLowerCase();
-          const path = `products/${r.sku.replace(/[^a-zA-Z0-9_-]/g, "_")}-${Date.now()}.${ext}`;
-          const { error } = await supabase.storage.from("product-images").upload(path, r.image, { upsert: true });
+          const path = `products/${r["sku"].replace(/[^a-zA-Z0-9_-]/g, "_")}-${Date.now()}.${ext}`;
+          const { error } = await supabase.storage.from("product-images").upload(path, r["image"], { upsert: true });
           if (!error) { image_path = path; photos++; }
         }
         payload.push({
-          sku: r.sku, name: r.name, category_id: r.category ? catMap.get(r.category.toLowerCase()) ?? null : null,
-          cbm_per_carton: r.cbm, default_price: r.price, unit: r.unit, description: r.description || null,
+          sku: r["sku"], name: r["name"], category_id: r["category"] ? catMap.get(r["category"].toLowerCase()) ?? null : null,
+          cbm_per_carton: r["cbm"], default_price: r["price"], unit: r["unit"], description: r["description"] || null,
           carton_length: r.length, carton_width: r.width, carton_height: r.height,
           ...(image_path ? { image_path } : {}),
         });
@@ -233,10 +233,10 @@ function ImportBody() {
                 <CardContent className="space-y-1 pt-4">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <p className="font-medium">{r.name || "(no name)"}</p>
-                      <p className="stat-label">Row {r.line} · {r.sku || "—"} · {r.category || "No category"} · {formatCbm(r.cbm)} · {formatMoney(r.price)}</p>
+                      <p className="font-medium">{r["name"] || "(no name)"}</p>
+                      <p className="stat-label">Row {r.line} · {r["sku"] || "—"} · {r["category"] || "No category"} · {formatCbm(r["cbm"])} · {formatMoney(r["price"])}</p>
                     </div>
-                    {r.image && <Badge variant="secondary">Photo</Badge>}
+                    {r["image"] && <Badge variant="secondary">Photo</Badge>}
                   </div>
                   {r.errors.map((e) => <p key={e} className="text-sm text-destructive">{e}</p>)}
                   {r.warnings.map((w) => <p key={w} className="text-sm text-muted-foreground">{w}</p>)}
