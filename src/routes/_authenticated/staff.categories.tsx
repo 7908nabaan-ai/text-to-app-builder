@@ -38,6 +38,7 @@ type Category = {
   slug: string;
   is_active: boolean;
   sort_order: number;
+  parent_id: string | null;
 };
 
 const slugify = (value: string) =>
@@ -71,7 +72,7 @@ function CategoriesBody() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("categories")
-        .select("id, name, slug, is_active, sort_order")
+        .select("id, name, slug, is_active, sort_order, parent_id")
         .order("sort_order")
         .order("name");
       if (error) throw error;
