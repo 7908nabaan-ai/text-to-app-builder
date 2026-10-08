@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { EmptyState, Page } from "@/components/page";
+import { ProductPhoto } from "@/components/product-photo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -374,7 +375,8 @@ function ProductsBody() {
           {filtered.map((product) => (
             <Card key={product.id}>
               <CardContent className="flex items-start justify-between gap-3 pt-5">
-                <div>
+                <ProductPhoto path={product.image_path} alt={product.name} className="h-12 w-12" />
+                <div className="flex-1">
                   <p className="font-medium">{product.name}</p>
                   <p className="stat-label">
                     {product.sku} · {formatCbm(Number(product.cbm_per_carton))} ·{" "}

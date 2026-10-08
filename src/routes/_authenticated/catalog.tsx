@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatCbm, formatMoney } from "@/lib/calc";
+import { ProductPhoto } from "@/components/product-photo";
 import { getOrCreateDraftOrder, logOrderEvent } from "@/lib/orders";
 
 export const Route = createFileRoute("/_authenticated/catalog")({
@@ -230,7 +231,8 @@ function CatalogBody({ userId }: { userId: string }) {
             <Card key={product.id}>
               <CardContent className="space-y-2 pt-5">
                 <div className="flex items-start justify-between gap-2">
-                  <div>
+                  <ProductPhoto path={product.image_path} alt={product.name} />
+                  <div className="flex-1">
                     <p className="font-medium">{product.name}</p>
                     <p className="stat-label">{product.sku}</p>
                   </div>
