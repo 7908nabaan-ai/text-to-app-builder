@@ -20,4 +20,4 @@
 - [x] Owner approval of catalog order lines
 - [x] Match the supplied wholesale workspace design across the app shell, catalog and order view
 - [x] Verify the updated appearance and navigation
-- [ ] Add Food / Non-Food main categories with departments and subcategories (per uploaded catalog structure)
+- [x] Add Food / Non-Food main categories with departments and subcategories (per uploaded catalog structure)
