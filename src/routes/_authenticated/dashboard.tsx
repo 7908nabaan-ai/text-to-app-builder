@@ -57,10 +57,15 @@ function StaffOrders() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("orders")
-        .select("*, profiles:customer_id(company_name, contact_name)")
+        .select("*")
         .order("updated_at", { ascending: false });
       if (error) throw error;
-      return data;
+      const ids = [...new Set(data.map((o) => o.customer_id))];
+      const { data: profs } = ids.length
+        ? await supabase.from("profiles").select("id, company_name, contact_name").in("id", ids)
+        : { data: [] };
+      const map = new Map((profs ?? []).map((p) => [p.id, p]));
+      return data.map((o) => ({ ...o, profiles: map.get(o.customer_id) ?? null }));
     },
   });
 

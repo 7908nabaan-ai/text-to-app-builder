@@ -71,11 +71,17 @@ function OrderBody({ orderId, isOwner }: { orderId: string; isOwner: boolean }) 
     queryFn: async () => {
       const { data, error } = await supabase
         .from("orders")
-        .select("*, profiles:customer_id(company_name, contact_name, shipping_destination)")
+        .select("*")
         .eq("id", orderId)
         .maybeSingle();
       if (error) throw error;
-      return data;
+      if (!data) return data;
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("company_name, contact_name, shipping_destination")
+        .eq("id", data.customer_id)
+        .maybeSingle();
+      return { ...data, profiles: profile };
     },
   });
 
