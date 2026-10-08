@@ -227,7 +227,7 @@ function ProductsBody() {
           onChange={(event) => setSearch(event.target.value)}
         />
         <Button asChild variant="outline" className="h-11">
-          <Link to="/staff/import">Import from file</Link>
+          <Link to="/staff/import">Bulk import from Excel</Link>
         </Button>
         <Dialog
           open={open}

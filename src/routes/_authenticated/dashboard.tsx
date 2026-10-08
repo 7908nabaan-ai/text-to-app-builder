@@ -10,14 +10,15 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { calcOrderTotals, formatCbm, formatMoney } from "@/lib/calc";
 import { ACTIVE_STATUSES, STATUS_LABELS, logOrderEvent, type OrderLine } from "@/lib/orders";
+import { AdminHome, CustomerActions, OwnerHome } from "@/components/role-home";
 import { ContactButtons } from "@/components/contact-buttons";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
-      { title: "My order — Sky Plus" },
+      { title: "Home — Sky Plus" },
       { name: "description", content: "Your current container order, capacity and totals." },
-      { property: "og:title", content: "My order — Sky Plus" },
+      { property: "og:title", content: "Home — Sky Plus" },
       { property: "og:description", content: "Your current container order, capacity and totals." },
     ],
   }),
@@ -26,8 +27,26 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 
 function DashboardPage() {
   return (
-    <Page title="Orders">
-      {({ isStaff, userId }) => (isStaff ? <StaffOrders /> : <CustomerOrder userId={userId} />)}
+    <Page title="Home">
+      {({ accountType, userId }) =>
+        accountType === "customer" ? (
+          <div className="space-y-6">
+            <CustomerOrder userId={userId} />
+            <div className="space-y-3">
+              <h2 className="font-display text-lg font-bold">Quick links</h2>
+              <CustomerActions />
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {accountType === "owner" ? <OwnerHome /> : <AdminHome />}
+            <div className="space-y-3">
+              <h2 className="font-display text-lg font-bold">Latest orders</h2>
+              <StaffOrders />
+            </div>
+          </div>
+        )
+      }
     </Page>
   );
 }

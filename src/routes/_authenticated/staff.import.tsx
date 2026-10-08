@@ -11,6 +11,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatCbm, formatMoney } from "@/lib/calc";
 import { downloadExcel } from "@/lib/exports";
+import { Input } from "@/components/ui/input";
+import { Sparkles } from "lucide-react";
+import { extractPriceList } from "@/lib/pricelist.functions";
 
 export const Route = createFileRoute("/_authenticated/staff/import")({
   head: () => ({
@@ -63,41 +66,11 @@ function num(v: unknown): number | null {
   return Number.isFinite(n) ? n : NaN;
 }
 
-function ImportBody() {
-  const qc = useQueryClient();
-  const [rows, setRows] = useState<Row[]>([]);
-  const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<string | null>(null);
-
-  const onFile = async (file: File) => {
-    setResult(null);
-    setBusy(true);
-    try {
-      let sheetData: ArrayBuffer;
-      const images = new Map<string, Blob>();
-      if (file.name.toLowerCase().endsWith(".zip")) {
-        const zip = await JSZip.loadAsync(file);
-        const entries = Object.values(zip.files).filter((f) => !f.dir && !f.name.includes("__MACOSX"));
-        const sheet = entries.find((f) => /\.(xlsx|xls|csv)$/i.test(f.name));
-        if (!sheet) throw new Error("The ZIP has no spreadsheet (.xlsx or .csv) inside.");
-        sheetData = await sheet.async("arraybuffer");
-        for (const e of entries) {
-          if (/\.(jpe?g|png|webp)$/i.test(e.name)) {
-            images.set(e.name.split("/").pop()!.toLowerCase(), await e.async("blob"));
-          }
-        }
-      } else {
-        sheetData = await file.arrayBuffer();
-      }
-      const wb = XLSX.read(sheetData);
-      const raw = XLSX.utils.sheet_to_json<Record<string, unknown>>(wb.Sheets[wb.SheetNames[0]!]!, { defval: "" });
-      const norm = raw.map((r) =>
-        Object.fromEntries(Object.entries(r).map(([k, v]) => [k.trim().toLowerCase().replace(/\s+/g, "_"), v])),
-      );
+async function buildRows(norm: Record<string, unknown>[], images: Map<string, Blob>): Promise<Row[]> {
       const { data: existing } = await supabase.from("products").select("sku");
       const existingSkus = new Set((existing ?? []).map((p) => p.sku.toLowerCase()));
       const seen = new Map<string, number>();
-      const parsed: Row[] = norm.map((r, i) => {
+      return norm.map((r, i) => {
         const errors: string[] = [];
         const warnings: string[] = [];
         const sku = String(r["sku"] ?? "").trim();
@@ -129,6 +102,60 @@ function ImportBody() {
           imageName, image, errors, warnings, exists,
         };
       });
+}
+
+function revalidate(rows: Row[], existingSkus: Set<string>): Row[] {
+  const seen = new Map<string, number>();
+  return rows.map((r) => {
+    const errors: string[] = [];
+    const warnings = r.warnings.filter((w) => !w.startsWith("Will update"));
+    if (!r.sku) errors.push("Missing product code");
+    if (!r.name) errors.push("Missing name");
+    if (!(r.cbm > 0)) errors.push("Invalid volume");
+    if (!(r.price >= 0) || Number.isNaN(r.price)) errors.push("Invalid price");
+    const key = r.sku.toLowerCase();
+    if (r.sku) {
+      if (seen.has(key)) errors.push(`Duplicate code (also row ${seen.get(key)})`);
+      else seen.set(key, r.line);
+    }
+    const exists = existingSkus.has(key);
+    if (exists) warnings.push("Will update existing product");
+    return { ...r, errors, warnings, exists };
+  });
+}
+
+function ImportBody() {
+  const qc = useQueryClient();
+  const [rows, setRows] = useState<Row[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
+
+  const onFile = async (file: File) => {
+    setResult(null);
+    setBusy(true);
+    try {
+      let sheetData: ArrayBuffer;
+      const images = new Map<string, Blob>();
+      if (file.name.toLowerCase().endsWith(".zip")) {
+        const zip = await JSZip.loadAsync(file);
+        const entries = Object.values(zip.files).filter((f) => !f.dir && !f.name.includes("__MACOSX"));
+        const sheet = entries.find((f) => /\.(xlsx|xls|csv)$/i.test(f.name));
+        if (!sheet) throw new Error("The ZIP has no spreadsheet (.xlsx or .csv) inside.");
+        sheetData = await sheet.async("arraybuffer");
+        for (const e of entries) {
+          if (/\.(jpe?g|png|webp)$/i.test(e.name)) {
+            images.set(e.name.split("/").pop()!.toLowerCase(), await e.async("blob"));
+          }
+        }
+      } else {
+        sheetData = await file.arrayBuffer();
+      }
+      const wb = XLSX.read(sheetData);
+      const raw = XLSX.utils.sheet_to_json<Record<string, unknown>>(wb.Sheets[wb.SheetNames[0]!]!, { defval: "" });
+      const norm = raw.map((r) =>
+        Object.fromEntries(Object.entries(r).map(([k, v]) => [k.trim().toLowerCase().replace(/\s+/g, "_"), v])),
+      );
+      const parsed = await buildRows(norm, images);
       if (parsed.length === 0) throw new Error("No rows found in the spreadsheet.");
       setRows(parsed);
     } catch (e) {
@@ -138,6 +165,51 @@ function ImportBody() {
       setBusy(false);
     }
   };
+
+  const [aiStatus, setAiStatus] = useState<string | null>(null);
+  const [skuSet, setSkuSet] = useState<Set<string>>(new Set());
+
+  const onAiFile = async (file: File) => {
+    setResult(null);
+    setBusy(true);
+    try {
+      let lines: string[];
+      if (/\.(txt|csv)$/i.test(file.name)) {
+        lines = (await file.text()).split(/\r?\n/);
+      } else {
+        const wb = XLSX.read(await file.arrayBuffer());
+        lines = wb.SheetNames.flatMap((n) => [`### Sheet: ${n}`, ...XLSX.utils.sheet_to_csv(wb.Sheets[n]!, { blankrows: false }).split("\n")]);
+      }
+      lines = lines.map((l) => l.replace(/,+$/, "").trim()).filter((l) => l.replace(/[,\s]/g, "").length > 0);
+      if (lines.length === 0) throw new Error("The file looks empty.");
+      const header = lines.slice(0, 6).join("\n");
+      const chunks: string[] = [];
+      for (let i = 0; i < lines.length; i += 120) chunks.push(i === 0 ? lines.slice(0, 120).join("\n") : `(Context — top of file)\n${header}\n(Continue)\n${lines.slice(i, i + 120).join("\n")}`);
+      const out: Record<string, unknown>[] = [];
+      for (let i = 0; i < chunks.length; i++) {
+        setAiStatus(`Reading part ${i + 1} of ${chunks.length}…`);
+        const { rows: got } = await extractPriceList({ data: { text: chunks[i]!.slice(0, 60000) } });
+        for (const r of got) {
+          const notes = [r.description, r.currency && r.currency !== "USD" ? `Price in ${r.currency}` : ""].filter(Boolean).join(" · ");
+          out.push({ ...r, price: r.price ?? "", cbm_per_carton: r.cbm_per_carton ?? "", length_cm: r.length_cm ?? "", width_cm: r.width_cm ?? "", height_cm: r.height_cm ?? "", description: notes, image: "" });
+        }
+      }
+      if (out.length === 0) throw new Error("No products were found in this file.");
+      const built = await buildRows(out, new Map());
+      const { data: existing } = await supabase.from("products").select("sku");
+      setSkuSet(new Set((existing ?? []).map((p) => p.sku.toLowerCase())));
+      setRows(built.map((r) => (r.description.includes("Price in ") ? { ...r, warnings: [...r.warnings, "Price is not in USD — check before importing"] } : r)));
+      toast.success(`Found ${built.length} products. Review and fix the rows before importing.`);
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setAiStatus(null);
+      setBusy(false);
+    }
+  };
+
+  const editRow = (line: number, patch: Partial<Row>) =>
+    setRows((prev) => revalidate(prev.map((r) => (r.line === line ? { ...r, ...patch } : r)), skuSet));
 
   const valid = rows.filter((r) => r.errors.length === 0);
 
@@ -214,6 +286,28 @@ function ImportBody() {
         </CardContent>
       </Card>
 
+      <Card>
+        <CardContent className="space-y-3 pt-5">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-gold" />
+            <p className="font-medium">Read a supplier price list with AI</p>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Upload any supplier list (Excel, CSV or text) in its own layout. The AI picks out product codes, names,
+            categories and prices so you can review and fix them before importing. Each part read uses AI credits.
+          </p>
+          <input
+            type="file"
+            accept=".xlsx,.xls,.csv,.txt"
+            disabled={busy}
+            aria-label="Supplier price list"
+            className="block w-full text-sm file:mr-3 file:rounded-md file:border-0 file:bg-secondary file:px-4 file:py-2 file:text-secondary-foreground"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) void onAiFile(f); e.target.value = ""; }}
+          />
+          {aiStatus && <p className="text-sm font-medium text-primary">{aiStatus}</p>}
+        </CardContent>
+      </Card>
+
       {result && <Card><CardContent className="pt-5 font-medium">{result}</CardContent></Card>}
 
       {rows.length > 0 && (
@@ -237,6 +331,14 @@ function ImportBody() {
                       <p className="stat-label">Row {r.line} · {r["sku"] || "—"} · {r["category"] || "No category"} · {formatCbm(r["cbm"])} · {formatMoney(r["price"])}</p>
                     </div>
                     {r["image"] && <Badge variant="secondary">Photo</Badge>}
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+                    <Input aria-label="Code" placeholder="Code" value={r.sku} onChange={(e) => editRow(r.line, { sku: e.target.value.trim() })} />
+                    <Input aria-label="Name" placeholder="Name" className="col-span-2" value={r.name} onChange={(e) => editRow(r.line, { name: e.target.value })} />
+                    <Input aria-label="Category" placeholder="Category" value={r.category} onChange={(e) => editRow(r.line, { category: e.target.value })} />
+                    <Input aria-label="Price" placeholder="Price" inputMode="decimal" value={String(r.price)} onChange={(e) => editRow(r.line, { price: Number(e.target.value) })} />
+                    <Input aria-label="Volume (CBM)" placeholder="CBM / carton" inputMode="decimal" value={r.cbm ? String(r.cbm) : ""} onChange={(e) => editRow(r.line, { cbm: Number(e.target.value) || 0 })} />
+                    <Input aria-label="Packing" placeholder="Packing" value={r.unit} onChange={(e) => editRow(r.line, { unit: e.target.value })} />
                   </div>
                   {r.errors.map((e) => <p key={e} className="text-sm text-destructive">{e}</p>)}
                   {r.warnings.map((w) => <p key={w} className="text-sm text-muted-foreground">{w}</p>)}

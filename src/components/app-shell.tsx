@@ -27,7 +27,7 @@ import { cn } from "@/lib/utils";
 type NavItem = { to: string; label: string; icon: typeof Ship };
 
 const customerNav: NavItem[] = [
-  { to: "/dashboard", label: "Order", icon: ClipboardList },
+  { to: "/dashboard", label: "Home", icon: ClipboardList },
   { to: "/catalog", label: "Catalog", icon: LayoutGrid },
   { to: "/history", label: "History", icon: History },
   { to: "/invoices", label: "Invoices", icon: FileText },
@@ -35,7 +35,7 @@ const customerNav: NavItem[] = [
 ];
 
 const staffNav: NavItem[] = [
-  { to: "/dashboard", label: "Orders", icon: ShoppingCart },
+  { to: "/dashboard", label: "Home", icon: ShoppingCart },
   { to: "/staff/customers", label: "Customers", icon: Users },
   { to: "/staff/invites", label: "Invites", icon: Send },
   { to: "/staff/products", label: "Products", icon: Package },
