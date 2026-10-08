@@ -12,3 +12,5 @@
 - [x] Invite role choice (Owner/Admin/Customer)
 - [x] Owners/Admins see staff navigation
 - [x] AI product finder for customers (describe needs → recommended catalog products)
+- [ ] Google-first sign-in page + uninvited message
+- [ ] Finish remaining open items
