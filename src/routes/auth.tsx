@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Ship } from "lucide-react";
+import { BackButton } from "@/components/back-button";
 
 export const Route = createFileRoute("/auth")({
   validateSearch: z.object({ invite: z.string().optional() }),
@@ -46,9 +47,13 @@ function AuthPage() {
   const [oauthError, setOauthError] = useState<string | null>(null);
 
   useEffect(() => {
-    void supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/dashboard" });
+    void supabase.auth.getUser().then(({ data }) => {
+      if (data.user) navigate({ to: "/dashboard", replace: true });
     });
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session) navigate({ to: "/dashboard", replace: true });
+    });
+    return () => sub.subscription.unsubscribe();
   }, [navigate]);
 
   useEffect(() => {
@@ -121,7 +126,7 @@ function AuthPage() {
   const handleGoogle = async () => {
     setBusy(true);
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+      redirect_uri: `${window.location.origin}/auth`,
     });
     if (result.error) {
       const msg = String((result.error as { message?: string }).message ?? "");
@@ -138,7 +143,8 @@ function AuthPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-primary/5 px-4 py-10">
+    <div className="relative flex min-h-screen flex-col items-center justify-center bg-primary/5 px-4 py-10">
+      <BackButton fallback="/" className="absolute left-2 top-2" />
       <Link to="/" className="mb-6 flex items-center gap-2 text-primary">
         <Ship className="h-7 w-7" />
         <span className="font-display text-2xl font-bold tracking-wide">SKY PLUS</span>
