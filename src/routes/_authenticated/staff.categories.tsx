@@ -90,6 +90,7 @@ function CategoriesBody() {
             slug: values.slug,
             is_active: values.is_active,
             sort_order: values.sort_order,
+            parent_id: values.parent_id,
           })
           .eq("id", values.id);
         if (error) throw error;
@@ -99,6 +100,7 @@ function CategoriesBody() {
           slug: values.slug,
           is_active: values.is_active,
           sort_order: values.sort_order,
+          parent_id: values.parent_id,
         });
         if (error) throw error;
       }
@@ -137,12 +139,14 @@ function CategoriesBody() {
       return;
     }
     const slugInput = String(form.get("slug") ?? "").trim();
+    const parent = String(form.get("parent_id") ?? "");
     save.mutate({
       id: editing?.id,
       name,
       slug: slugify(slugInput || name),
       sort_order: Number(form.get("sort_order") ?? 0),
       is_active: form.get("is_active") === "on",
+      parent_id: parent === "" || parent === editing?.id ? null : parent,
     });
   };
 
