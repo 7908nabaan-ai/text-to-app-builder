@@ -8,7 +8,7 @@
 - [x] Repeat order
 - [x] PDF/Excel exports
 - [ ] Spec compliance audit
-- [ ] Load Master Price List into catalog (file ready; staff imports via Products → Import from file)
+- [x] Load Master Price List into catalog (558 products)
 - [x] Invite role choice (Owner/Admin/Customer)
 - [x] Owners/Admins see staff navigation
 - [x] AI product finder for customers (describe needs → recommended catalog products)
