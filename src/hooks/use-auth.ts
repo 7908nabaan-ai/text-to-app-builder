@@ -3,6 +3,7 @@ import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
 export type Role = "staff" | "customer";
+const STAFF_ROLES = ["staff", "owner", "admin"];
 
 export function useAuth() {
   const [session, setSession] = useState<Session | null>(null);
@@ -20,8 +21,8 @@ export function useAuth() {
       }
       const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
       if (!active) return;
-      const roles = (data ?? []).map((row) => row.role as Role);
-      setRole(roles.includes("staff") ? "staff" : "customer");
+      const roles = (data ?? []).map((row) => String(row.role));
+      setRole(roles.some((r) => STAFF_ROLES.includes(r)) ? "staff" : "customer");
     };
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, nextSession) => {
