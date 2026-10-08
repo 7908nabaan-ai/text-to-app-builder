@@ -25,20 +25,23 @@ export const Route = createFileRoute("/products")({
 
 function PublicCatalog() {
   const [search, setSearch] = useState("");
-  const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [mainId, setMainId] = useState<string | null>(null);
+  const [deptId, setDeptId] = useState<string | null>(null);
 
   const { data: categories = [] } = useQuery({
     queryKey: ["public-categories"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("categories")
-        .select("id, name")
+        .select("id, name, parent_id")
         .eq("is_active", true)
         .order("sort_order");
       if (error) throw error;
       return data;
     },
   });
+  const mains = categories.filter((c) => !c.parent_id);
+  const depts = categories.filter((c) => c.parent_id === mainId);
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ["public-products"],

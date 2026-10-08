@@ -142,7 +142,7 @@ function CatalogBody({ userId }: { userId: string }) {
   const [recs, setRecs] = useState<{ summary: string; items: Recommendation[] } | null>(null);
   const ask = useMutation({
     mutationFn: () => recommend({ data: { need } }),
-    onMutate: () => setCategoryId(null),
+    onMutate: () => { setMainId(null); setDeptId(null); },
     onSuccess: (r) => setRecs(r),
     onError: (error: Error) => toast.error(error.message),
   });
