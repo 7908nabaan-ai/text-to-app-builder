@@ -258,6 +258,9 @@ function CustomerOrder({ userId }: { userId: string }) {
                     <div>
                       <p className="font-medium">{line.product_name}</p>
                       <p className="stat-label">{line.sku}</p>
+                      <Badge className="mt-1" variant={line.approval_status === "approved" ? "default" : line.approval_status === "rejected" ? "destructive" : "secondary"}>
+                        {line.approval_status === "approved" ? "Approved" : line.approval_status === "rejected" ? "Not approved" : "Awaiting approval"}
+                      </Badge>
                     </div>
                     <div className="text-right">
                       <p className="font-semibold">{formatMoney(line.negotiated_price)}</p>

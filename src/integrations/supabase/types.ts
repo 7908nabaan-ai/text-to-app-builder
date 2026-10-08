@@ -405,6 +405,9 @@ export type Database = {
       }
       order_lines: {
         Row: {
+          approval_status: string
+          approved_at: string | null
+          approved_by: string | null
           catalog_price: number
           category_name: string | null
           cbm_per_carton: number
@@ -424,6 +427,9 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          approval_status?: string
+          approved_at?: string | null
+          approved_by?: string | null
           catalog_price: number
           category_name?: string | null
           cbm_per_carton: number
@@ -443,6 +449,9 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          approval_status?: string
+          approved_at?: string | null
+          approved_by?: string | null
           catalog_price?: number
           category_name?: string | null
           cbm_per_carton?: number

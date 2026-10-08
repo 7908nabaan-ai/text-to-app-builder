@@ -38,9 +38,9 @@ function StaffOrderPage() {
   const { orderId } = useParams({ from: "/_authenticated/staff/orders/$orderId" });
   return (
     <Page title="Order review">
-      {({ isStaff }) =>
+      {({ isStaff, accountType }) =>
         isStaff ? (
-          <OrderBody orderId={orderId} />
+          <OrderBody orderId={orderId} isOwner={accountType === "owner"} />
         ) : (
           <EmptyState title="Staff only" description="This page is for Sky Plus staff." />
         )
@@ -49,8 +49,22 @@ function StaffOrderPage() {
   );
 }
 
-function OrderBody({ orderId }: { orderId: string }) {
+function OrderBody({ orderId, isOwner }: { orderId: string; isOwner: boolean }) {
   const queryClient = useQueryClient();
+
+  const approve = useMutation({
+    mutationFn: async ({ ids, status }: { ids: string[]; status: "approved" | "rejected" }) => {
+      const { error } = await supabase.from("order_lines").update({ approval_status: status }).in("id", ids);
+      if (error) throw error;
+      await logOrderEvent({ order_id: orderId, event_type: status === "approved" ? "lines_approved" : "lines_rejected", actor_role: "owner", reason: `${ids.length} line(s)` });
+    },
+    onSuccess: (_d, v) => {
+      toast.success(v.status === "approved" ? "Approved" : "Rejected");
+      void queryClient.invalidateQueries({ queryKey: ["order-lines", orderId] });
+      void queryClient.invalidateQueries({ queryKey: ["order-events", orderId] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
 
   const { data: order } = useQuery({
     queryKey: ["order", orderId],
@@ -144,6 +158,9 @@ function OrderBody({ orderId }: { orderId: string }) {
         is_locked?: boolean;
         shipped_at?: string;
       } = { status };
+      if (status === "confirmed" && lines.some((l) => (l.approval_status ?? "pending") === "pending")) {
+        throw new Error("An owner must approve or reject every line before confirming.");
+      }
       if (status === "confirmed") {
         patch.finalized_at = new Date().toISOString();
         patch.is_locked = true;
@@ -245,15 +262,40 @@ function OrderBody({ orderId }: { orderId: string }) {
         </CardContent>
       </Card>
 
+      {(() => {
+        const pending = lines.filter((l) => (l.approval_status ?? "pending") === "pending");
+        return (
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-card p-3">
+            <p className="text-sm">
+              {pending.length === 0 ? "All lines reviewed." : `${pending.length} line(s) waiting for owner approval.`}
+            </p>
+            {isOwner && pending.length > 0 && (
+              <Button size="sm" disabled={approve.isPending} onClick={() => approve.mutate({ ids: pending.map((l) => l.id), status: "approved" })}>
+                Approve all pending
+              </Button>
+            )}
+          </div>
+        );
+      })()}
+
       {lines.map((line) => (
         <Card key={line.id}>
           <CardContent className="space-y-3 pt-5">
-            <div>
-              <p className="font-medium">{line.product_name}</p>
-              <p className="stat-label">
-                {line.sku} · requested {line.requested_quantity}
-              </p>
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <p className="font-medium">{line.product_name}</p>
+                <p className="stat-label">
+                  {line.sku} · requested {line.requested_quantity}
+                </p>
+              </div>
+              <ApprovalBadge status={line.approval_status} />
             </div>
+            {isOwner && (
+              <div className="flex gap-2">
+                <Button size="sm" variant={line.approval_status === "approved" ? "default" : "outline"} disabled={approve.isPending} onClick={() => approve.mutate({ ids: [line.id], status: "approved" })}>Approve</Button>
+                <Button size="sm" variant={line.approval_status === "rejected" ? "destructive" : "outline"} disabled={approve.isPending} onClick={() => approve.mutate({ ids: [line.id], status: "rejected" })}>Reject</Button>
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor={`q-${line.id}`}>Quantity</Label>
@@ -305,4 +347,10 @@ function OrderBody({ orderId }: { orderId: string }) {
       </Card>
     </div>
   );
+}
+
+function ApprovalBadge({ status }: { status?: string | undefined }) {
+  const s = status ?? "pending";
+  const label = s === "approved" ? "Approved" : s === "rejected" ? "Rejected" : "Awaiting approval";
+  return <Badge variant={s === "approved" ? "default" : s === "rejected" ? "destructive" : "secondary"}>{label}</Badge>;
 }
