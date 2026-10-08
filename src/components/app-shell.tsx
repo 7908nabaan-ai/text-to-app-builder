@@ -18,7 +18,9 @@ import {
   UserRound,
   Users,
 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -61,15 +63,22 @@ export function AppShell({
   const primary = isStaff ? staffNav : customerNav;
   const items = [...primary, ...secondaryNav];
 
+  const queryClient = useQueryClient();
   const signOut = async () => {
+    await queryClient.cancelQueries();
+    queryClient.clear();
     await supabase.auth.signOut();
-    navigate({ to: "/auth" });
+    navigate({ to: "/auth", replace: true });
   };
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
       <header className="sticky top-0 z-30 border-b border-sidebar-border bg-sidebar text-sidebar-foreground">
-        <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4">
+        <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-2 sm:gap-3 sm:px-4">
+          <BackButton
+            fallback="/dashboard"
+            className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground"
+          />
           <Link to="/dashboard" className="flex items-center gap-2">
             <Ship className="h-5 w-5 text-sidebar-primary" />
             <span className="font-display text-lg font-bold tracking-wide">SKY PLUS</span>

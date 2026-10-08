@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Ship } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
+import { BackButton } from "@/components/back-button";
 
 const links = [
   { to: "/", label: "Home" },
@@ -14,7 +15,8 @@ export function PublicLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4">
+        <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-2 sm:gap-4 sm:px-4">
+          <BackButton fallback="/" />
           <Link to="/" className="flex items-center gap-2 text-primary">
             <Ship className="h-5 w-5 text-gold" />
             <span className="font-display text-lg font-bold tracking-wide">SKY PLUS</span>
