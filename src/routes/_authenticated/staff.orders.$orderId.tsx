@@ -349,7 +349,7 @@ function OrderBody({ orderId, isOwner }: { orderId: string; isOwner: boolean }) 
   );
 }
 
-export function ApprovalBadge({ status }: { status?: string }) {
+function ApprovalBadge({ status }: { status?: string }) {
   const s = status ?? "pending";
   const label = s === "approved" ? "Approved" : s === "rejected" ? "Rejected" : "Awaiting approval";
   return <Badge variant={s === "approved" ? "default" : s === "rejected" ? "destructive" : "secondary"}>{label}</Badge>;
