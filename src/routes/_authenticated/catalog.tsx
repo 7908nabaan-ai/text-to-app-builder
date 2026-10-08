@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -11,9 +11,11 @@ import { EmptyState, Page } from "@/components/page";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { formatCbm, formatMoney } from "@/lib/calc";
 import { ProductPhoto } from "@/components/product-photo";
+import warehouseImage from "@/assets/catalog-warehouse.jpg";
+import { CustomerOrder } from "@/components/customer-order";
+import { OrderActivity } from "@/components/order-activity";
 import { getOrCreateDraftOrder, logOrderEvent } from "@/lib/orders";
 
 export const Route = createFileRoute("/_authenticated/catalog")({
@@ -23,6 +25,8 @@ export const Route = createFileRoute("/_authenticated/catalog")({
       { name: "description", content: "Browse products by category and add cartons to your order." },
       { property: "og:title", content: "Product catalog — Sky Plus" },
       { property: "og:description", content: "Browse products and add cartons to your order." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: CatalogPage,
@@ -30,16 +34,16 @@ export const Route = createFileRoute("/_authenticated/catalog")({
 
 function CatalogPage() {
   return (
-    <Page title="Catalog" description="Add products to your container order.">
+    <Page title="Product catalogue">
       {({ userId }) => <CatalogBody userId={userId} />}
     </Page>
   );
 }
 
 function CatalogBody({ userId }: { userId: string }) {
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(0);
   const [categoryId, setCategoryId] = useState<string | null>(null);
 
   const { data: categories = [] } = useQuery({
@@ -126,6 +130,8 @@ function CatalogBody({ userId }: { userId: string }) {
     onSuccess: () => {
       toast.success("Added to your order");
       void queryClient.invalidateQueries({ queryKey: ["current-order"] });
+      void queryClient.invalidateQueries({ queryKey: ["order-lines"] });
+      void queryClient.invalidateQueries({ queryKey: ["order-activity"] });
     },
     onError: (error: Error) => toast.error(error.message),
   });
@@ -150,8 +156,15 @@ function CatalogBody({ userId }: { userId: string }) {
   });
 
   return (
-    <div className="space-y-4">
-      <Card>
+    <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_280px]">
+      <div className="min-w-0 space-y-4">
+      <div className="catalog-banner relative h-28 overflow-hidden rounded-md">
+        <img src={warehouseImage} width={1536} height={512} alt="Wholesale distribution warehouse" className="h-full w-full object-cover" />
+        <div className="absolute inset-0 z-10 flex flex-col justify-center px-5 text-sidebar-foreground"><p className="text-xs font-semibold">QUALITY PRODUCTS</p><h2 className="font-display text-2xl font-bold">FOR A BRIGHTER TOMORROW</h2><p className="mt-1 text-[10px]">FOOD · BEVERAGES · HOUSEHOLD · PERSONAL CARE</p></div>
+      </div>
+      <details className="border-b border-border bg-card p-4">
+      <summary className="cursor-pointer font-medium">Find products with AI</summary>
+      <div className="mt-3">
         <CardContent className="space-y-3 pt-5">
           <p className="flex items-center gap-2 font-medium">
             <Wand2 className="h-4 w-4 text-gold" /> Not sure what to order? Describe what you need.
@@ -188,14 +201,15 @@ function CatalogBody({ userId }: { userId: string }) {
             </div>
           )}
         </CardContent>
-      </Card>
+      </div>
+      </details>
       <div className="relative">
         <Search className="absolute top-3.5 left-3 h-4 w-4 text-muted-foreground" />
         <Input
           className="h-11 pl-9"
           placeholder="Search by name or SKU"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => { setSearch(e.target.value); setPage(0); }}
         />
       </div>
 
@@ -203,7 +217,7 @@ function CatalogBody({ userId }: { userId: string }) {
         <Button
           size="sm"
           variant={categoryId === null ? "default" : "outline"}
-          onClick={() => setCategoryId(null)}
+          onClick={() => { setCategoryId(null); setPage(0); }}
         >
           All
         </Button>
@@ -213,7 +227,7 @@ function CatalogBody({ userId }: { userId: string }) {
             size="sm"
             variant={categoryId === category.id ? "default" : "outline"}
             className="shrink-0"
-            onClick={() => setCategoryId(category.id)}
+            onClick={() => { setCategoryId(category.id); setPage(0); }}
           >
             {category.name}
           </Button>
@@ -226,37 +240,26 @@ function CatalogBody({ userId }: { userId: string }) {
           description="Sky Plus staff will publish the catalog shortly."
         />
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((product) => (
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 2xl:grid-cols-5">
+          {filtered.slice(page * 6, (page + 1) * 6).map((product) => (
             <Card key={product.id}>
-              <CardContent className="space-y-2 pt-5">
-                <div className="flex items-start justify-between gap-2">
-                  <ProductPhoto path={product.image_path} alt={product.name} />
-                  <div className="flex-1">
-                    <p className="font-medium">{product.name}</p>
-                    <p className="stat-label">{product.sku}</p>
-                  </div>
-                  <Badge variant="secondary">{formatMoney(product.default_price)}</Badge>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {formatCbm(product.cbm_per_carton)} per {product.unit.toLowerCase()}
-                </p>
-                <Button
-                  className="h-11 w-full"
-                  onClick={() => addLine.mutate(product)}
-                  disabled={addLine.isPending}
-                >
-                  Add to order
-                </Button>
+              <CardContent className="flex h-full flex-col gap-2 p-3">
+                <ProductPhoto path={product.image_path} alt={product.name} className="h-24 w-full rounded-none bg-card" />
+                <p className="line-clamp-2 min-h-9 text-xs font-semibold leading-snug">{product.name}</p>
+                <p className="truncate text-[10px] text-muted-foreground">{product.sku} · {product.unit}</p>
+                <p className="text-xs font-semibold">{formatMoney(product.default_price)}</p>
+                <p className="text-[10px] text-muted-foreground">{formatCbm(product.cbm_per_carton)} / carton</p>
+                <Button size="sm" className="mt-auto w-full" onClick={() => addLine.mutate(product)} disabled={addLine.isPending}>Add</Button>
               </CardContent>
             </Card>
           ))}
         </div>
       )}
 
-      <Button variant="outline" className="h-11 w-full" onClick={() => navigate({ to: "/dashboard" })}>
-        Go to my order
-      </Button>
+      {filtered.length > 6 && <div className="flex items-center justify-between gap-2 text-xs"><span className="text-muted-foreground">{page * 6 + 1}–{Math.min((page + 1) * 6, filtered.length)} of {filtered.length} products</span><div className="flex gap-2"><Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(page - 1)}>Previous</Button><Button variant="outline" size="sm" disabled={(page + 1) * 6 >= filtered.length} onClick={() => setPage(page + 1)}>Next</Button></div></div>}
+      <section className="border-t border-border pt-4"><h2 className="mb-3 text-lg font-bold">Current order</h2><CustomerOrder userId={userId} /></section>
+      </div>
+      <OrderActivity userId={userId} />
     </div>
   );
 }

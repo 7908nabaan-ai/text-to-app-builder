@@ -9,14 +9,15 @@ export function ProductPhoto({ path, alt, className }: { path: string | null | u
     enabled: Boolean(path),
     staleTime: 50 * 60 * 1000,
     queryFn: async () => {
-      const { data } = await supabase.storage.from("product-images").createSignedUrl(path!, 3600);
+      if (!path) return null;
+      const { data } = await supabase.storage.from("product-images").createSignedUrl(path, 3600);
       return data?.signedUrl ?? null;
     },
   });
   return (
     <div className={cn("flex shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted", className ?? "h-16 w-16")}>
       {url ? (
-        <img src={url} alt={alt} loading="lazy" className="h-full w-full object-cover" />
+        <img src={url} alt={alt} loading="lazy" className="h-full w-full object-contain" />
       ) : (
         <Package className="h-6 w-6 text-muted-foreground" />
       )}
