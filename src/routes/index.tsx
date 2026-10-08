@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Ship, Container, FileText, MessageCircle } from "lucide-react";
+import { Container, FileText, MessageCircle } from "lucide-react";
 import heroImage from "@/assets/hero-containers.jpg";
 import { Button } from "@/components/ui/button";
 import { PublicLayout } from "@/components/public-layout";
