@@ -7,7 +7,7 @@
 - [x] Catalog bulk import (Excel/ZIP)
 - [x] Repeat order
 - [x] PDF/Excel exports
-- [ ] Spec compliance audit
+- [x] Spec compliance audit (no build, type or page errors)
 - [x] Load Master Price List into catalog (558 products)
 - [x] Invite role choice (Owner/Admin/Customer)
 - [x] Owners/Admins see staff navigation
