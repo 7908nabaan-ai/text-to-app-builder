@@ -11,6 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { calcOrderTotals, formatCbm, formatMoney } from "@/lib/calc";
 import { ACTIVE_STATUSES, STATUS_LABELS, logOrderEvent, type OrderLine } from "@/lib/orders";
 import { AdminHome, CustomerActions, OwnerHome } from "@/components/role-home";
+import { ProductPhoto } from "@/components/product-photo";
 import { ContactButtons } from "@/components/contact-buttons";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -97,7 +98,7 @@ function StaffOrders() {
   );
 }
 
-function CustomerOrder({ userId }: { userId: string }) {
+export function CustomerOrder({ userId }: { userId: string }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -121,10 +122,11 @@ function CustomerOrder({ userId }: { userId: string }) {
     queryKey: ["order-lines", order?.id],
     enabled: Boolean(order?.id),
     queryFn: async () => {
+      if (!order) return [];
       const { data, error } = await supabase
         .from("order_lines")
         .select("*")
-        .eq("order_id", order!.id)
+        .eq("order_id", order.id)
         .order("product_name");
       if (error) throw error;
       return data as OrderLine[];
@@ -253,75 +255,22 @@ function CustomerOrder({ userId }: { userId: string }) {
       {lines.length === 0 ? (
         <EmptyState title="Your order is empty" description="Add products from the catalog." />
       ) : (
-        <div className="space-y-3">
-          {lines.map((line) => {
-            const quantity = line.final_quantity ?? line.current_quantity;
-            return (
-              <Card key={line.id}>
-                <CardContent className="space-y-3 pt-5">
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <p className="font-medium">{line.product_name}</p>
-                      <p className="stat-label">{line.sku}</p>
-                      <Badge className="mt-1" variant={line.approval_status === "approved" ? "default" : line.approval_status === "rejected" ? "destructive" : "secondary"}>
-                        {line.approval_status === "approved" ? "Approved" : line.approval_status === "rejected" ? "Not approved" : "Awaiting approval"}
-                      </Badge>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold">{formatMoney(line.negotiated_price)}</p>
-                      {line.negotiated_price !== line.catalog_price && (
-                        <p className="stat-label line-through">
-                          {formatMoney(line.catalog_price)}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Button
-                        size="icon"
-                        variant="outline"
-                        className="h-11 w-11"
-                        disabled={!editable}
-                        onClick={() => setQuantity.mutate({ line, quantity: quantity - 1 })}
-                        aria-label="Decrease"
-                      >
-                        <Minus className="h-4 w-4" />
-                      </Button>
-                      <span className="w-10 text-center font-semibold">{quantity}</span>
-                      <Button
-                        size="icon"
-                        variant="outline"
-                        className="h-11 w-11"
-                        disabled={!editable}
-                        onClick={() => setQuantity.mutate({ line, quantity: quantity + 1 })}
-                        aria-label="Increase"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <div className="text-right text-sm text-muted-foreground">
-                      <p>{formatCbm(line.cbm_per_carton * quantity)}</p>
-                      <p className="font-medium text-foreground">
-                        {formatMoney(line.negotiated_price * quantity)}
-                      </p>
-                    </div>
-                    {editable && (
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-11 w-11 text-destructive"
-                        onClick={() => setQuantity.mutate({ line, quantity: 0 })}
-                        aria-label="Remove"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+        <div className="overflow-x-auto rounded-md border border-border bg-card">
+          <table className="w-full min-w-160 text-left text-xs">
+            <thead><tr><th>Product</th><th>Packing</th><th>Qty / CTN</th><th>CBM / CTN</th><th>Total CBM</th><th>Unit price</th><th>Total</th><th>Status</th><th /></tr></thead>
+            <tbody>{lines.map((line) => {
+              const quantity = line.final_quantity ?? line.current_quantity;
+              return <tr key={line.id}>
+                <td><div className="flex items-center gap-2"><ProductPhoto path={line.image_path} alt={line.product_name} className="h-9 w-9" /><div className="min-w-28"><p className="font-semibold">{line.product_name}</p><p className="text-muted-foreground">{line.sku}</p></div></div></td>
+                <td>{line.unit}</td>
+                <td><div className="flex items-center"><Button size="icon" variant="outline" className="h-7 w-7" disabled={!editable || setQuantity.isPending} onClick={() => setQuantity.mutate({ line, quantity: quantity - 1 })} aria-label={`Decrease ${line.product_name}`}><Minus /></Button><span className="w-9 text-center font-semibold">{quantity}</span><Button size="icon" variant="outline" className="h-7 w-7" disabled={!editable || setQuantity.isPending} onClick={() => setQuantity.mutate({ line, quantity: quantity + 1 })} aria-label={`Increase ${line.product_name}`}><Plus /></Button></div></td>
+                <td>{line.cbm_per_carton.toFixed(3)}</td><td>{(line.cbm_per_carton * quantity).toFixed(3)}</td><td>{formatMoney(line.negotiated_price)}</td><td className="font-semibold">{formatMoney(line.negotiated_price * quantity)}</td>
+                <td><span className={line.approval_status === "approved" ? "text-success" : line.approval_status === "rejected" ? "text-destructive" : "text-muted-foreground"}>{line.approval_status === "approved" ? "Approved" : line.approval_status === "rejected" ? "Rejected" : "Pending"}</span></td>
+                <td>{editable && <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" disabled={setQuantity.isPending} onClick={() => setQuantity.mutate({ line, quantity: 0 })} aria-label={`Remove ${line.product_name}`}><Trash2 /></Button>}</td>
+              </tr>;
+            })}</tbody>
+            <tfoot><tr><td colSpan={2} className="font-semibold">Order totals</td><td>{totals.totalCartons}</td><td /><td>{totals.totalCbm.toFixed(3)}</td><td /><td className="font-bold">{formatMoney(totals.totalValue)}</td><td colSpan={2} /></tr></tfoot>
+          </table>
         </div>
       )}
 
