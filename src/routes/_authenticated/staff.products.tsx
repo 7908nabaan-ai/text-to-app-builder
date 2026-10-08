@@ -58,6 +58,7 @@ type Product = {
   default_price: number;
   unit: string;
   is_active: boolean;
+  image_path?: string | null;
 };
 
 function ProductsPage() {
@@ -87,7 +88,7 @@ function ProductsBody() {
       const { data, error } = await supabase
         .from("products")
         .select(
-          "id, sku, name, category_id, description, carton_length, carton_width, carton_height, cbm_per_carton, default_price, unit, is_active",
+          "id, sku, name, category_id, description, carton_length, carton_width, carton_height, cbm_per_carton, default_price, unit, is_active, image_path",
         )
         .order("name");
       if (error) throw error;
