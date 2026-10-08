@@ -211,6 +211,42 @@ function ImportBody() {
   const editRow = (line: number, patch: Partial<Row>) =>
     setRows((prev) => revalidate(prev.map((r) => (r.line === line ? { ...r, ...patch } : r)), skuSet));
 
+  const loadMaster = async () => {
+    setBusy(true);
+    setResult(null);
+    try {
+      const res = await fetch("/data/master-price-list.json");
+      if (!res.ok) throw new Error("The master price list file is not available.");
+      const list = (await res.json()) as [string, string, string, number | null, number | null, number | null, number, number, string][];
+      const { data: cats } = await supabase.from("categories").select("id, name");
+      const catMap = new Map((cats ?? []).map((c) => [c.name.toLowerCase(), c.id]));
+      for (const name of ["Food", "Non Food"]) {
+        if (catMap.has(name.toLowerCase())) continue;
+        const { data, error } = await supabase.from("categories").insert({ name, slug: name.toLowerCase().replace(/\s+/g, "-") }).select("id").single();
+        if (error) throw error;
+        catMap.set(name.toLowerCase(), data.id);
+      }
+      for (let i = 0; i < list.length; i += 200) {
+        const payload = list.slice(i, i + 200).map(([sku, name, cat, l, w, h, cbm, price, unit]) => ({
+          sku, name, category_id: catMap.get(cat.toLowerCase()) ?? null, carton_length: l, carton_width: w, carton_height: h,
+          cbm_per_carton: cbm, default_price: price, unit,
+        }));
+        const { error } = await supabase.from("products").upsert(payload, { onConflict: "sku" });
+        if (error) throw error;
+      }
+      const { data: auth } = await supabase.auth.getUser();
+      await supabase.from("audit_log").insert({ actor_id: auth.user?.id ?? null, action: "catalog_import", entity_type: "product", entity_id: null, details: { source: "Master Price List Maldives 2026", imported: list.length } });
+      setResult(`Loaded ${list.length} products from the Master Price List.`);
+      void qc.invalidateQueries({ queryKey: ["products-admin"] });
+      void qc.invalidateQueries({ queryKey: ["catalog-products"] });
+      void qc.invalidateQueries({ queryKey: ["categories"] });
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const valid = rows.filter((r) => r.errors.length === 0);
 
   const commit = async () => {
@@ -274,6 +310,7 @@ function ImportBody() {
             <Button variant="outline" onClick={() => downloadExcel("sky-plus-catalog-template.xlsx", [{ title: "Products", head: HEAD, rows: [["SKU-001", "Sample chair", "Furniture", 60, 50, 90, "", 25, "Carton", "Stackable", "SKU-001.jpg"]] }])}>
               Download template
             </Button>
+            <Button onClick={() => void loadMaster()} disabled={busy}>Load Master Price List (558 products)</Button>
             <Button asChild variant="ghost"><Link to="/staff/products">Back to products</Link></Button>
           </div>
           <input
