@@ -15,6 +15,13 @@
       "when": 1791476121731,
       "tag": "0001_add_owner_admin_roles",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791476147589,
+      "tag": "0002_owner_admin_logic",
+      "breakpoints": true
     }
   ]
 }

@@ -727,6 +727,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_owner: { Args: never; Returns: boolean }
       is_staff: { Args: never; Returns: boolean }
       issue_invoice: {
         Args: {
