@@ -44,7 +44,8 @@ function CatalogBody({ userId }: { userId: string }) {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
-  const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [mainId, setMainId] = useState<string | null>(null);
+  const [deptId, setDeptId] = useState<string | null>(null);
 
   const { data: categories = [] } = useQuery({
     queryKey: ["categories"],
@@ -58,17 +59,17 @@ function CatalogBody({ userId }: { userId: string }) {
       return data;
     },
   });
+  const mains = categories.filter((c) => !c.parent_id);
+  const depts = categories.filter((c) => c.parent_id === mainId);
 
   const { data: products = [], isLoading } = useQuery({
-    queryKey: ["products", categoryId],
+    queryKey: ["products"],
     queryFn: async () => {
-      let query = supabase
+      const { data, error } = await supabase
         .from("products")
         .select("*, categories(name)")
         .eq("is_active", true)
         .order("name");
-      if (categoryId) query = query.eq("category_id", categoryId);
-      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
