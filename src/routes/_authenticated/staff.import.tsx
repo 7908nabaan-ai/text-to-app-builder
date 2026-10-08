@@ -63,41 +63,11 @@ function num(v: unknown): number | null {
   return Number.isFinite(n) ? n : NaN;
 }
 
-function ImportBody() {
-  const qc = useQueryClient();
-  const [rows, setRows] = useState<Row[]>([]);
-  const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<string | null>(null);
-
-  const onFile = async (file: File) => {
-    setResult(null);
-    setBusy(true);
-    try {
-      let sheetData: ArrayBuffer;
-      const images = new Map<string, Blob>();
-      if (file.name.toLowerCase().endsWith(".zip")) {
-        const zip = await JSZip.loadAsync(file);
-        const entries = Object.values(zip.files).filter((f) => !f.dir && !f.name.includes("__MACOSX"));
-        const sheet = entries.find((f) => /\.(xlsx|xls|csv)$/i.test(f.name));
-        if (!sheet) throw new Error("The ZIP has no spreadsheet (.xlsx or .csv) inside.");
-        sheetData = await sheet.async("arraybuffer");
-        for (const e of entries) {
-          if (/\.(jpe?g|png|webp)$/i.test(e.name)) {
-            images.set(e.name.split("/").pop()!.toLowerCase(), await e.async("blob"));
-          }
-        }
-      } else {
-        sheetData = await file.arrayBuffer();
-      }
-      const wb = XLSX.read(sheetData);
-      const raw = XLSX.utils.sheet_to_json<Record<string, unknown>>(wb.Sheets[wb.SheetNames[0]!]!, { defval: "" });
-      const norm = raw.map((r) =>
-        Object.fromEntries(Object.entries(r).map(([k, v]) => [k.trim().toLowerCase().replace(/\s+/g, "_"), v])),
-      );
+async function buildRows(norm: Record<string, unknown>[], images: Map<string, Blob>): Promise<Row[]> {
       const { data: existing } = await supabase.from("products").select("sku");
       const existingSkus = new Set((existing ?? []).map((p) => p.sku.toLowerCase()));
       const seen = new Map<string, number>();
-      const parsed: Row[] = norm.map((r, i) => {
+      return norm.map((r, i) => {
         const errors: string[] = [];
         const warnings: string[] = [];
         const sku = String(r["sku"] ?? "").trim();
@@ -129,6 +99,60 @@ function ImportBody() {
           imageName, image, errors, warnings, exists,
         };
       });
+}
+
+function revalidate(rows: Row[], existingSkus: Set<string>): Row[] {
+  const seen = new Map<string, number>();
+  return rows.map((r) => {
+    const errors: string[] = [];
+    const warnings = r.warnings.filter((w) => !w.startsWith("Will update"));
+    if (!r.sku) errors.push("Missing product code");
+    if (!r.name) errors.push("Missing name");
+    if (!(r.cbm > 0)) errors.push("Invalid volume");
+    if (!(r.price >= 0) || Number.isNaN(r.price)) errors.push("Invalid price");
+    const key = r.sku.toLowerCase();
+    if (r.sku) {
+      if (seen.has(key)) errors.push(`Duplicate code (also row ${seen.get(key)})`);
+      else seen.set(key, r.line);
+    }
+    const exists = existingSkus.has(key);
+    if (exists) warnings.push("Will update existing product");
+    return { ...r, errors, warnings, exists };
+  });
+}
+
+function ImportBody() {
+  const qc = useQueryClient();
+  const [rows, setRows] = useState<Row[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
+
+  const onFile = async (file: File) => {
+    setResult(null);
+    setBusy(true);
+    try {
+      let sheetData: ArrayBuffer;
+      const images = new Map<string, Blob>();
+      if (file.name.toLowerCase().endsWith(".zip")) {
+        const zip = await JSZip.loadAsync(file);
+        const entries = Object.values(zip.files).filter((f) => !f.dir && !f.name.includes("__MACOSX"));
+        const sheet = entries.find((f) => /\.(xlsx|xls|csv)$/i.test(f.name));
+        if (!sheet) throw new Error("The ZIP has no spreadsheet (.xlsx or .csv) inside.");
+        sheetData = await sheet.async("arraybuffer");
+        for (const e of entries) {
+          if (/\.(jpe?g|png|webp)$/i.test(e.name)) {
+            images.set(e.name.split("/").pop()!.toLowerCase(), await e.async("blob"));
+          }
+        }
+      } else {
+        sheetData = await file.arrayBuffer();
+      }
+      const wb = XLSX.read(sheetData);
+      const raw = XLSX.utils.sheet_to_json<Record<string, unknown>>(wb.Sheets[wb.SheetNames[0]!]!, { defval: "" });
+      const norm = raw.map((r) =>
+        Object.fromEntries(Object.entries(r).map(([k, v]) => [k.trim().toLowerCase().replace(/\s+/g, "_"), v])),
+      );
+      const parsed = await buildRows(norm, images);
       if (parsed.length === 0) throw new Error("No rows found in the spreadsheet.");
       setRows(parsed);
     } catch (e) {
