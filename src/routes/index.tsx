@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Ship, Container, FileText, MessageCircle } from "lucide-react";
+import { Container, FileText, MessageCircle } from "lucide-react";
 import heroImage from "@/assets/hero-containers.jpg";
 import { Button } from "@/components/ui/button";
+import { PublicLayout } from "@/components/public-layout";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -18,6 +19,8 @@ export const Route = createFileRoute("/")({
         content:
           "Build container orders by CBM, negotiate quantities and prices, track invoices, payments and shipment history.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Landing,
@@ -43,19 +46,7 @@ const features = [
 
 function Landing() {
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border">
-        <div className="mx-auto flex h-14 max-w-5xl items-center px-4">
-          <div className="flex items-center gap-2 text-primary">
-            <Ship className="h-5 w-5" />
-            <span className="font-display text-lg font-bold tracking-wide">SKY PLUS</span>
-          </div>
-          <Button asChild size="sm" className="ml-auto">
-            <Link to="/auth">Sign in</Link>
-          </Button>
-        </div>
-      </header>
-
+    <PublicLayout>
       <section className="mx-auto max-w-5xl px-4 py-10">
         <h1 className="max-w-xl font-display text-4xl leading-tight font-bold tracking-wide sm:text-5xl">
           Container orders, from first carton to final invoice.
@@ -67,6 +58,9 @@ function Landing() {
         <div className="mt-6">
           <Button asChild size="lg" className="h-12">
             <Link to="/auth">Open your account</Link>
+          </Button>
+          <Button asChild size="lg" variant="outline" className="ml-3 h-12">
+            <Link to="/products">Browse products</Link>
           </Button>
         </div>
         <img
@@ -84,7 +78,7 @@ function Landing() {
             const Icon = feature.icon;
             return (
               <div key={feature.title} className="rounded-lg border border-border bg-card p-5">
-                <Icon className="h-6 w-6 text-accent" />
+                <Icon className="h-6 w-6 text-gold" />
                 <h2 className="mt-3 font-display text-lg font-semibold">{feature.title}</h2>
                 <p className="mt-1 text-sm text-muted-foreground">{feature.text}</p>
               </div>
@@ -92,6 +86,6 @@ function Landing() {
           })}
         </div>
       </section>
-    </div>
+    </PublicLayout>
   );
 }
