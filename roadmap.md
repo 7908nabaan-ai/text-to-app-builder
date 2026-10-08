@@ -9,3 +9,5 @@
 - [ ] PDF/Excel exports
 - [ ] Spec compliance audit
 - [ ] Load Master Price List Maldives 2026 into catalog
+- [ ] Invite role choice (Owner/Admin/Customer)
+- [x] Owners/Admins see staff navigation
