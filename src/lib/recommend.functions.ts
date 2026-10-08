@@ -26,7 +26,7 @@ export const recommendProducts = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ need: z.string().trim().min(3).max(1000) }).parse(d))
   .handler(async ({ data, context }) => {
-    const apiKey = process.env.LOVABLE_API_KEY;
+    const apiKey = process.env["LOVABLE_API_KEY"];
     if (!apiKey) throw new Error("AI is not configured.");
 
     const { data: products, error } = await context.supabase
