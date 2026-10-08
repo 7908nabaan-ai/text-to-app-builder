@@ -226,35 +226,71 @@ function CategoriesBody() {
         <EmptyState title="No categories yet" description="Add your first category above." />
       ) : (
         <div className="space-y-3">
-          {data.map((category) => (
-            <Card key={category.id}>
-              <CardContent className="flex items-center justify-between gap-3 pt-5">
-                <div>
-                  <p className="font-medium">{category.name}</p>
-                  <p className="stat-label">
-                    {category.slug} · order {category.sort_order}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Switch
-                    checked={category.is_active}
-                    onCheckedChange={() => toggleActive.mutate(category)}
-                    aria-label="Visible in catalog"
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setEditing(category);
-                      setOpen(true);
-                    }}
-                  >
-                    Edit
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+          {data
+            .filter((c) => !c.parent_id)
+            .map((main) => (
+              <Card key={main.id}>
+                <CardContent className="space-y-3 pt-5">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="font-semibold">{main.name}</p>
+                      <p className="stat-label">
+                        {main.slug} · main category · order {main.sort_order}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        checked={main.is_active}
+                        onCheckedChange={() => toggleActive.mutate(main)}
+                        aria-label="Visible in catalog"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setEditing(main);
+                          setOpen(true);
+                        }}
+                      >
+                        Edit
+                      </Button>
+                    </div>
+                  </div>
+                  {data
+                    .filter((c) => c.parent_id === main.id)
+                    .map((dept) => (
+                      <div
+                        key={dept.id}
+                        className="ml-4 flex items-center justify-between gap-3 rounded-md border border-border p-3"
+                      >
+                        <div>
+                          <p className="font-medium">{dept.name}</p>
+                          <p className="stat-label">
+                            {dept.slug} · order {dept.sort_order}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            checked={dept.is_active}
+                            onCheckedChange={() => toggleActive.mutate(dept)}
+                            aria-label="Visible in catalog"
+                          />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setEditing(dept);
+                              setOpen(true);
+                            }}
+                          >
+                            Edit
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                </CardContent>
+              </Card>
+            ))}
         </div>
       )}
     </div>
