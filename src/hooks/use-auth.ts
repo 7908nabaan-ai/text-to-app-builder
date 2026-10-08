@@ -9,6 +9,7 @@ export function useAuth() {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<Role | null>(null);
+  const [accountType, setAccountType] = useState<"owner" | "admin" | "customer" | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -16,13 +17,14 @@ export function useAuth() {
 
     const loadRole = async (userId: string | undefined) => {
       if (!userId) {
-        if (active) setRole(null);
+        if (active) { setRole(null); setAccountType(null); }
         return;
       }
       const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
       if (!active) return;
       const roles = (data ?? []).map((row) => String(row.role));
       setRole(roles.some((r) => STAFF_ROLES.includes(r)) ? "staff" : "customer");
+      setAccountType(roles.includes("owner") ? "owner" : roles.some((r) => STAFF_ROLES.includes(r)) ? "admin" : "customer");
     };
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, nextSession) => {
@@ -46,5 +48,5 @@ export function useAuth() {
     };
   }, []);
 
-  return { session, user, role, isStaff: role === "staff", loading };
+  return { session, user, role, accountType, isStaff: role === "staff", loading };
 }

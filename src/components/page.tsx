@@ -12,9 +12,9 @@ export function Page({
   title: string;
   description?: string;
   actions?: ReactNode;
-  children: (ctx: { isStaff: boolean; userId: string }) => ReactNode;
+  children: (ctx: { isStaff: boolean; userId: string; accountType: "owner" | "admin" | "customer" }) => ReactNode;
 }) {
-  const { role, loading, user } = useAuth();
+  const { role, loading, user, accountType } = useAuth();
 
   if (loading || !user) {
     return (
@@ -37,7 +37,7 @@ export function Page({
         </div>
         {actions}
       </div>
-      {children({ isStaff, userId: user.id })}
+      {children({ isStaff, userId: user.id, accountType: accountType ?? (isStaff ? "admin" : "customer") })}
     </AppShell>
   );
 }
