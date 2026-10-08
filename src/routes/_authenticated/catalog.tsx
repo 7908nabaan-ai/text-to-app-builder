@@ -14,7 +14,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { formatCbm, formatMoney } from "@/lib/calc";
 import { ProductPhoto } from "@/components/product-photo";
 import warehouseImage from "@/assets/catalog-warehouse.jpg";
-import { CustomerOrder } from "@/routes/_authenticated/dashboard";
+import { CustomerOrder } from "@/components/customer-order";
 import { OrderActivity } from "@/components/order-activity";
 import { getOrCreateDraftOrder, logOrderEvent } from "@/lib/orders";
 
@@ -43,6 +43,7 @@ function CatalogPage() {
 function CatalogBody({ userId }: { userId: string }) {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(0);
   const [categoryId, setCategoryId] = useState<string | null>(null);
 
   const { data: categories = [] } = useQuery({
@@ -208,7 +209,7 @@ function CatalogBody({ userId }: { userId: string }) {
           className="h-11 pl-9"
           placeholder="Search by name or SKU"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => { setSearch(e.target.value); setPage(0); }}
         />
       </div>
 
@@ -216,7 +217,7 @@ function CatalogBody({ userId }: { userId: string }) {
         <Button
           size="sm"
           variant={categoryId === null ? "default" : "outline"}
-          onClick={() => setCategoryId(null)}
+          onClick={() => { setCategoryId(null); setPage(0); }}
         >
           All
         </Button>
@@ -226,7 +227,7 @@ function CatalogBody({ userId }: { userId: string }) {
             size="sm"
             variant={categoryId === category.id ? "default" : "outline"}
             className="shrink-0"
-            onClick={() => setCategoryId(category.id)}
+            onClick={() => { setCategoryId(category.id); setPage(0); }}
           >
             {category.name}
           </Button>
@@ -240,7 +241,7 @@ function CatalogBody({ userId }: { userId: string }) {
         />
       ) : (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 2xl:grid-cols-5">
-          {filtered.map((product) => (
+          {filtered.slice(page * 6, (page + 1) * 6).map((product) => (
             <Card key={product.id}>
               <CardContent className="flex h-full flex-col gap-2 p-3">
                 <ProductPhoto path={product.image_path} alt={product.name} className="h-24 w-full rounded-none bg-card" />
@@ -255,6 +256,7 @@ function CatalogBody({ userId }: { userId: string }) {
         </div>
       )}
 
+      {filtered.length > 6 && <div className="flex items-center justify-between gap-2 text-xs"><span className="text-muted-foreground">{page * 6 + 1}–{Math.min((page + 1) * 6, filtered.length)} of {filtered.length} products</span><div className="flex gap-2"><Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(page - 1)}>Previous</Button><Button variant="outline" size="sm" disabled={(page + 1) * 6 >= filtered.length} onClick={() => setPage(page + 1)}>Next</Button></div></div>}
       <section className="border-t border-border pt-4"><h2 className="mb-3 text-lg font-bold">Current order</h2><CustomerOrder userId={userId} /></section>
       </div>
       <OrderActivity userId={userId} />
