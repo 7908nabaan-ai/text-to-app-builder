@@ -4,13 +4,13 @@
 - [x] Invite-only signup: staff create invite links; sign-up blocked without a valid invite
 - [x] Invoice generation + versioning (PI/CI)
 - [x] Payment recording and balances
-- [ ] Catalog bulk import (Excel/ZIP)
-- [ ] Repeat order
-- [ ] PDF/Excel exports
+- [x] Catalog bulk import (Excel/ZIP)
+- [x] Repeat order
+- [x] PDF/Excel exports
 - [ ] Spec compliance audit
 - [ ] Load Master Price List into catalog (file ready; staff imports via Products → Import from file)
 - [x] Invite role choice (Owner/Admin/Customer)
 - [x] Owners/Admins see staff navigation
 - [x] AI product finder for customers (describe needs → recommended catalog products)
 - [x] Google-first sign-in page + uninvited message
-- [ ] Finish remaining open items
+- [ ] Show product photos in catalogs
