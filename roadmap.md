@@ -11,3 +11,4 @@
 - [ ] Load Master Price List Maldives 2026 into catalog
 - [ ] Invite role choice (Owner/Admin/Customer)
 - [x] Owners/Admins see staff navigation
+- [ ] AI product finder for customers (describe needs → recommended catalog products)
