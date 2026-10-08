@@ -14,3 +14,5 @@
 - [x] AI product finder for customers (describe needs → recommended catalog products)
 - [x] Google-first sign-in page + uninvited message
 - [ ] Show product photos in catalogs
+- [ ] AI supplier price list extraction (staff import)
+- [ ] Role start pages: Owner / Admin / Customer
