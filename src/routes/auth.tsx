@@ -52,7 +52,7 @@ function AuthPage() {
   }, [navigate]);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search + "&" + window.location.hash.replace(/^#/, ""));
+    const params = new URLSearchParams(window.location.search.replace(/^\?/, "") + "&" + window.location.hash.replace(/^#/, ""));
     const desc = params.get("error_description");
     if (desc) {
       setOauthError(
