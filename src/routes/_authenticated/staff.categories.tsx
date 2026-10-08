@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -49,7 +49,7 @@ const slugify = (value: string) =>
 
 function CategoriesPage() {
   return (
-    <Page title="Categories" description="Groups used to organise the product catalog.">
+    <Page title="Categories" description="Groups used to organise the product catalog." actions={<Button asChild variant="outline"><Link to="/staff/import">Bulk import from Excel</Link></Button>}>
       {({ isStaff }) =>
         isStaff ? (
           <CategoriesBody />
