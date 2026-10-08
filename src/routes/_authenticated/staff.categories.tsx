@@ -38,6 +38,7 @@ type Category = {
   slug: string;
   is_active: boolean;
   sort_order: number;
+  parent_id: string | null;
 };
 
 const slugify = (value: string) =>
@@ -71,7 +72,7 @@ function CategoriesBody() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("categories")
-        .select("id, name, slug, is_active, sort_order")
+        .select("id, name, slug, is_active, sort_order, parent_id")
         .order("sort_order")
         .order("name");
       if (error) throw error;
@@ -89,6 +90,7 @@ function CategoriesBody() {
             slug: values.slug,
             is_active: values.is_active,
             sort_order: values.sort_order,
+            parent_id: values.parent_id,
           })
           .eq("id", values.id);
         if (error) throw error;
@@ -98,6 +100,7 @@ function CategoriesBody() {
           slug: values.slug,
           is_active: values.is_active,
           sort_order: values.sort_order,
+          parent_id: values.parent_id,
         });
         if (error) throw error;
       }
@@ -136,12 +139,14 @@ function CategoriesBody() {
       return;
     }
     const slugInput = String(form.get("slug") ?? "").trim();
+    const parent = String(form.get("parent_id") ?? "");
     save.mutate({
       id: editing?.id,
       name,
       slug: slugify(slugInput || name),
       sort_order: Number(form.get("sort_order") ?? 0),
       is_active: form.get("is_active") === "on",
+      parent_id: parent === "" || parent === editing?.id ? null : parent,
     });
   };
 
@@ -177,6 +182,24 @@ function CategoriesBody() {
               />
             </div>
             <div className="space-y-1.5">
+              <Label htmlFor="parent_id">Main category</Label>
+              <select
+                id="parent_id"
+                name="parent_id"
+                className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm"
+                defaultValue={editing?.parent_id ?? ""}
+              >
+                <option value="">None — this is a main category</option>
+                {data
+                  .filter((c) => !c.parent_id && c.id !== editing?.id)
+                  .map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+              </select>
+            </div>
+            <div className="space-y-1.5">
               <Label htmlFor="sort_order">Display order</Label>
               <Input
                 id="sort_order"
@@ -203,35 +226,71 @@ function CategoriesBody() {
         <EmptyState title="No categories yet" description="Add your first category above." />
       ) : (
         <div className="space-y-3">
-          {data.map((category) => (
-            <Card key={category.id}>
-              <CardContent className="flex items-center justify-between gap-3 pt-5">
-                <div>
-                  <p className="font-medium">{category.name}</p>
-                  <p className="stat-label">
-                    {category.slug} · order {category.sort_order}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Switch
-                    checked={category.is_active}
-                    onCheckedChange={() => toggleActive.mutate(category)}
-                    aria-label="Visible in catalog"
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setEditing(category);
-                      setOpen(true);
-                    }}
-                  >
-                    Edit
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+          {data
+            .filter((c) => !c.parent_id)
+            .map((main) => (
+              <Card key={main.id}>
+                <CardContent className="space-y-3 pt-5">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="font-semibold">{main.name}</p>
+                      <p className="stat-label">
+                        {main.slug} · main category · order {main.sort_order}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        checked={main.is_active}
+                        onCheckedChange={() => toggleActive.mutate(main)}
+                        aria-label="Visible in catalog"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setEditing(main);
+                          setOpen(true);
+                        }}
+                      >
+                        Edit
+                      </Button>
+                    </div>
+                  </div>
+                  {data
+                    .filter((c) => c.parent_id === main.id)
+                    .map((dept) => (
+                      <div
+                        key={dept.id}
+                        className="ml-4 flex items-center justify-between gap-3 rounded-md border border-border p-3"
+                      >
+                        <div>
+                          <p className="font-medium">{dept.name}</p>
+                          <p className="stat-label">
+                            {dept.slug} · order {dept.sort_order}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            checked={dept.is_active}
+                            onCheckedChange={() => toggleActive.mutate(dept)}
+                            aria-label="Visible in catalog"
+                          />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setEditing(dept);
+                              setOpen(true);
+                            }}
+                          >
+                            Edit
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                </CardContent>
+              </Card>
+            ))}
         </div>
       )}
     </div>

@@ -29,6 +29,13 @@
       "when": 1791478204526,
       "tag": "0003_order_line_approval",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791503717201,
+      "tag": "0004_category_hierarchy",
+      "breakpoints": true
     }
   ]
 }

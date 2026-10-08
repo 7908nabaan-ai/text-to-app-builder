@@ -44,7 +44,8 @@ function CatalogBody({ userId }: { userId: string }) {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
-  const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [mainId, setMainId] = useState<string | null>(null);
+  const [deptId, setDeptId] = useState<string | null>(null);
 
   const { data: categories = [] } = useQuery({
     queryKey: ["categories"],
@@ -58,17 +59,17 @@ function CatalogBody({ userId }: { userId: string }) {
       return data;
     },
   });
+  const mains = categories.filter((c) => !c.parent_id);
+  const depts = categories.filter((c) => c.parent_id === mainId);
 
   const { data: products = [], isLoading } = useQuery({
-    queryKey: ["products", categoryId],
+    queryKey: ["products"],
     queryFn: async () => {
-      let query = supabase
+      const { data, error } = await supabase
         .from("products")
         .select("*, categories(name)")
         .eq("is_active", true)
         .order("name");
-      if (categoryId) query = query.eq("category_id", categoryId);
-      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
@@ -141,13 +142,19 @@ function CatalogBody({ userId }: { userId: string }) {
   const [recs, setRecs] = useState<{ summary: string; items: Recommendation[] } | null>(null);
   const ask = useMutation({
     mutationFn: () => recommend({ data: { need } }),
-    onMutate: () => setCategoryId(null),
+    onMutate: () => { setMainId(null); setDeptId(null); },
     onSuccess: (r) => setRecs(r),
     onError: (error: Error) => toast.error(error.message),
   });
   const byId = new Map(products.map((p) => [p.id, p]));
 
   const filtered = products.filter((product) => {
+    if (deptId) {
+      if (product.category_id !== deptId) return false;
+    } else if (mainId) {
+      const ids = new Set([mainId, ...depts.map((d) => d.id)]);
+      if (!product.category_id || !ids.has(product.category_id)) return false;
+    }
     const term = search.trim().toLowerCase();
     if (!term) return true;
     return (
@@ -216,23 +223,45 @@ function CatalogBody({ userId }: { userId: string }) {
       <div className="flex gap-2 overflow-x-auto pb-1">
         <Button
           size="sm"
-          variant={categoryId === null ? "default" : "outline"}
-          onClick={() => { setCategoryId(null); setPage(0); }}
+          variant={mainId === null ? "default" : "outline"}
+          onClick={() => { setMainId(null); setDeptId(null); setPage(0); }}
         >
           All
         </Button>
-        {categories.map((category) => (
+        {mains.map((main) => (
           <Button
-            key={category.id}
+            key={main.id}
             size="sm"
-            variant={categoryId === category.id ? "default" : "outline"}
+            variant={mainId === main.id ? "default" : "outline"}
             className="shrink-0"
-            onClick={() => { setCategoryId(category.id); setPage(0); }}
+            onClick={() => { setMainId(main.id); setDeptId(null); setPage(0); }}
           >
-            {category.name}
+            {main.name}
           </Button>
         ))}
       </div>
+      {mainId && depts.length > 0 && (
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          <Button
+            size="sm"
+            variant={deptId === null ? "secondary" : "ghost"}
+            onClick={() => { setDeptId(null); setPage(0); }}
+          >
+            All departments
+          </Button>
+          {depts.map((dept) => (
+            <Button
+              key={dept.id}
+              size="sm"
+              variant={deptId === dept.id ? "secondary" : "ghost"}
+              className="shrink-0"
+              onClick={() => { setDeptId(dept.id); setPage(0); }}
+            >
+              {dept.name}
+            </Button>
+          ))}
+        </div>
+      )}
 
       {isLoading ? null : filtered.length === 0 ? (
         <EmptyState

@@ -25,20 +25,23 @@ export const Route = createFileRoute("/products")({
 
 function PublicCatalog() {
   const [search, setSearch] = useState("");
-  const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [mainId, setMainId] = useState<string | null>(null);
+  const [deptId, setDeptId] = useState<string | null>(null);
 
   const { data: categories = [] } = useQuery({
     queryKey: ["public-categories"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("categories")
-        .select("id, name")
+        .select("id, name, parent_id")
         .eq("is_active", true)
         .order("sort_order");
       if (error) throw error;
       return data;
     },
   });
+  const mains = categories.filter((c) => !c.parent_id);
+  const depts = categories.filter((c) => c.parent_id === mainId);
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ["public-products"],
@@ -54,9 +57,11 @@ function PublicCatalog() {
   });
 
   const term = search.trim().toLowerCase();
+  const mainIds = mainId ? new Set([mainId, ...depts.map((d) => d.id)]) : null;
   const shown = products.filter(
     (p) =>
-      (!categoryId || p.category_id === categoryId) &&
+      (!deptId || p.category_id === deptId) &&
+      (!mainIds || (p.category_id !== null && mainIds.has(p.category_id))) &&
       (!term || p.name.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term)),
   );
 
@@ -77,20 +82,37 @@ function PublicCatalog() {
           />
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
-          <Button size="sm" variant={categoryId ? "outline" : "default"} onClick={() => setCategoryId(null)}>
+          <Button size="sm" variant={mainId ? "outline" : "default"} onClick={() => { setMainId(null); setDeptId(null); }}>
             All
           </Button>
-          {categories.map((c) => (
+          {mains.map((c) => (
             <Button
               key={c.id}
               size="sm"
-              variant={categoryId === c.id ? "default" : "outline"}
-              onClick={() => setCategoryId(c.id)}
+              variant={mainId === c.id ? "default" : "outline"}
+              onClick={() => { setMainId(c.id); setDeptId(null); }}
             >
               {c.name}
             </Button>
           ))}
         </div>
+        {mainId && depts.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-2">
+            <Button size="sm" variant={deptId ? "ghost" : "secondary"} onClick={() => setDeptId(null)}>
+              All departments
+            </Button>
+            {depts.map((d) => (
+              <Button
+                key={d.id}
+                size="sm"
+                variant={deptId === d.id ? "secondary" : "ghost"}
+                onClick={() => setDeptId(d.id)}
+              >
+                {d.name}
+              </Button>
+            ))}
+          </div>
+        )}
         {isLoading ? (
           <p className="mt-8 text-muted-foreground">Loading products…</p>
         ) : shown.length === 0 ? (
