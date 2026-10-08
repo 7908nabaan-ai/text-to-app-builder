@@ -38,6 +38,7 @@ export type OrderLine = {
   proposed_quantity: number | null;
   current_quantity: number;
   final_quantity: number | null;
+  approval_status?: string;
 };
 
 export async function logOrderEvent(input: {
