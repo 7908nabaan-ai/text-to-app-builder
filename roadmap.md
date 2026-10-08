@@ -16,3 +16,4 @@
 - [ ] Show product photos in catalogs
 - [ ] AI supplier price list extraction (staff import)
 - [ ] Role start pages: Owner / Admin / Customer
+- [ ] Make bulk Excel import easy to find (Products + Categories)
