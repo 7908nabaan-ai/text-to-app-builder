@@ -101,13 +101,22 @@ function ProductsBody() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("categories")
-        .select("id, name")
+        .select("id, name, parent_id")
         .order("sort_order")
         .order("name");
       if (error) throw error;
       return data;
     },
   });
+  const categoryLabel = (id: string) => {
+    const cat = categories.find((c) => c.id === id);
+    if (!cat) return "";
+    const parent = cat.parent_id ? categories.find((c) => c.id === cat.parent_id) : null;
+    return parent ? `${parent.name} — ${cat.name}` : cat.name;
+  };
+  const sortedCategories = [...categories].sort((a, b) =>
+    categoryLabel(a.id).localeCompare(categoryLabel(b.id)),
+  );
 
   const save = useMutation({
     mutationFn: async (values: {
@@ -275,9 +284,9 @@ function ProductsBody() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">No category</SelectItem>
-                    {categories.map((category) => (
+                    {sortedCategories.map((category) => (
                       <SelectItem key={category.id} value={category.id}>
-                        {category.name}
+                        {categoryLabel(category.id)}
                       </SelectItem>
                     ))}
                   </SelectContent>
