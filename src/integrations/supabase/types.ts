@@ -727,6 +727,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_owner: { Args: never; Returns: boolean }
       is_staff: { Args: never; Returns: boolean }
       issue_invoice: {
         Args: {
@@ -739,7 +740,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "staff" | "customer"
+      app_role: "staff" | "customer" | "owner" | "admin"
       invoice_kind: "proforma" | "commercial"
       invoice_state: "current" | "superseded" | "cancelled"
       order_status:
@@ -879,7 +880,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["staff", "customer"],
+      app_role: ["staff", "customer", "owner", "admin"],
       invoice_kind: ["proforma", "commercial"],
       invoice_state: ["current", "superseded", "cancelled"],
       order_status: [

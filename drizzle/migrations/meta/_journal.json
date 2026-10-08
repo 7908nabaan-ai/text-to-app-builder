@@ -8,6 +8,20 @@
       "when": 1791475869327,
       "tag": "0000_public_catalog_read",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791476121731,
+      "tag": "0001_add_owner_admin_roles",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791476147589,
+      "tag": "0002_owner_admin_logic",
+      "breakpoints": true
     }
   ]
 }
