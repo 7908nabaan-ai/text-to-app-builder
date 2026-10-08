@@ -149,6 +149,12 @@ function CatalogBody({ userId }: { userId: string }) {
   const byId = new Map(products.map((p) => [p.id, p]));
 
   const filtered = products.filter((product) => {
+    if (deptId) {
+      if (product.category_id !== deptId) return false;
+    } else if (mainId) {
+      const ids = new Set([mainId, ...depts.map((d) => d.id)]);
+      if (!product.category_id || !ids.has(product.category_id)) return false;
+    }
     const term = search.trim().toLowerCase();
     if (!term) return true;
     return (
@@ -217,23 +223,45 @@ function CatalogBody({ userId }: { userId: string }) {
       <div className="flex gap-2 overflow-x-auto pb-1">
         <Button
           size="sm"
-          variant={categoryId === null ? "default" : "outline"}
-          onClick={() => { setCategoryId(null); setPage(0); }}
+          variant={mainId === null ? "default" : "outline"}
+          onClick={() => { setMainId(null); setDeptId(null); setPage(0); }}
         >
           All
         </Button>
-        {categories.map((category) => (
+        {mains.map((main) => (
           <Button
-            key={category.id}
+            key={main.id}
             size="sm"
-            variant={categoryId === category.id ? "default" : "outline"}
+            variant={mainId === main.id ? "default" : "outline"}
             className="shrink-0"
-            onClick={() => { setCategoryId(category.id); setPage(0); }}
+            onClick={() => { setMainId(main.id); setDeptId(null); setPage(0); }}
           >
-            {category.name}
+            {main.name}
           </Button>
         ))}
       </div>
+      {mainId && depts.length > 0 && (
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          <Button
+            size="sm"
+            variant={deptId === null ? "secondary" : "ghost"}
+            onClick={() => { setDeptId(null); setPage(0); }}
+          >
+            All departments
+          </Button>
+          {depts.map((dept) => (
+            <Button
+              key={dept.id}
+              size="sm"
+              variant={deptId === dept.id ? "secondary" : "ghost"}
+              className="shrink-0"
+              onClick={() => { setDeptId(dept.id); setPage(0); }}
+            >
+              {dept.name}
+            </Button>
+          ))}
+        </div>
+      )}
 
       {isLoading ? null : filtered.length === 0 ? (
         <EmptyState
