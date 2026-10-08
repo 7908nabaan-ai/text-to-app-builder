@@ -18,5 +18,5 @@
 - [x] Role start pages: Owner / Admin / Customer
 - [x] Make bulk Excel import easy to find (Products + Categories)
 - [x] Owner approval of catalog order lines
-- [ ] Match the supplied wholesale workspace design across the app shell, catalog and order view
-- [ ] Verify the updated appearance and navigation
+- [x] Match the supplied wholesale workspace design across the app shell, catalog and order view
+- [x] Verify the updated appearance and navigation

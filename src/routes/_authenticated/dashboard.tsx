@@ -15,6 +15,8 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
       { name: "description", content: "Your current container order, capacity and totals." },
       { property: "og:title", content: "Home — Sky Plus" },
       { property: "og:description", content: "Your current container order, capacity and totals." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: DashboardPage,
