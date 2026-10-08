@@ -39,6 +39,7 @@ type Invite = {
   expires_at: string;
   accepted_at: string | null;
   revoked_at: string | null;
+  role: string;
   created_at: string;
 };
 
@@ -52,6 +53,7 @@ function InvitesPage() {
   const [email, setEmail] = useState("");
   const [contactName, setContactName] = useState("");
   const [company, setCompany] = useState("");
+  const [role, setRole] = useState<"customer" | "admin" | "owner">("customer");
 
   const { data: invites = [], isLoading } = useQuery({
     queryKey: ["invites"],
@@ -75,6 +77,7 @@ function InvitesPage() {
           contact_name: contactName.trim() || null,
           company_name: company.trim() || null,
           created_by: userData.user?.id ?? null,
+          role,
         })
         .select("token")
         .single();
@@ -126,8 +129,8 @@ function InvitesPage() {
 
   return (
     <Page
-      title="Customer invitations"
-      description="Customers can only create an account with a link you send them."
+      title="Invitations"
+      description="People can only join with a link you send them. Choose their role when inviting."
     >
       {() => (
         <>
@@ -164,6 +167,20 @@ function InvitesPage() {
                   />
                 </div>
               </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="invite-role">Role</Label>
+                <select
+                  id="invite-role"
+                  className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm"
+                  value={role}
+                  onChange={(e) => setRole(e.target.value as typeof role)}
+                >
+                  <option value="customer">Customer</option>
+                  <option value="admin">Admin (staff tools)</option>
+                  <option value="owner">Owner (max 2)</option>
+                </select>
+                <p className="text-xs text-muted-foreground">Only Owners can invite Admins or Owners.</p>
+              </div>
               <Button
                 className="h-11 w-full sm:w-auto"
                 disabled={!email.trim() || create.isPending}
@@ -193,6 +210,7 @@ function InvitesPage() {
                           {invite.company_name ?? invite.contact_name ?? "—"}
                         </p>
                       </div>
+                      <Badge variant="outline" className="capitalize">{invite.role}</Badge>
                       <Badge variant={status.variant}>{status.label}</Badge>
                       {open && (
                         <>
