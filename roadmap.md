@@ -17,3 +17,4 @@
 - [x] AI supplier price list extraction (staff import)
 - [x] Role start pages: Owner / Admin / Customer
 - [x] Make bulk Excel import easy to find (Products + Categories)
+- [x] Owner approval of catalog order lines
