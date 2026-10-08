@@ -182,6 +182,24 @@ function CategoriesBody() {
               />
             </div>
             <div className="space-y-1.5">
+              <Label htmlFor="parent_id">Main category</Label>
+              <select
+                id="parent_id"
+                name="parent_id"
+                className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm"
+                defaultValue={editing?.parent_id ?? ""}
+              >
+                <option value="">None — this is a main category</option>
+                {data
+                  .filter((c) => !c.parent_id && c.id !== editing?.id)
+                  .map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+              </select>
+            </div>
+            <div className="space-y-1.5">
               <Label htmlFor="sort_order">Display order</Label>
               <Input
                 id="sort_order"
