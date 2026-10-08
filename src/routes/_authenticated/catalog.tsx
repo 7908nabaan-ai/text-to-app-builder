@@ -2,7 +2,10 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Search } from "lucide-react";
+import { Search, Wand2 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { recommendProducts, type Recommendation } from "@/lib/recommend.functions";
+import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { EmptyState, Page } from "@/components/page";
 import { Button } from "@/components/ui/button";
@@ -126,6 +129,17 @@ function CatalogBody({ userId }: { userId: string }) {
     onError: (error: Error) => toast.error(error.message),
   });
 
+  const recommend = useServerFn(recommendProducts);
+  const [need, setNeed] = useState("");
+  const [recs, setRecs] = useState<{ summary: string; items: Recommendation[] } | null>(null);
+  const ask = useMutation({
+    mutationFn: () => recommend({ data: { need } }),
+    onMutate: () => setCategoryId(null),
+    onSuccess: (r) => setRecs(r),
+    onError: (error: Error) => toast.error(error.message),
+  });
+  const byId = new Map(products.map((p) => [p.id, p]));
+
   const filtered = products.filter((product) => {
     const term = search.trim().toLowerCase();
     if (!term) return true;
@@ -136,6 +150,44 @@ function CatalogBody({ userId }: { userId: string }) {
 
   return (
     <div className="space-y-4">
+      <Card>
+        <CardContent className="space-y-3 pt-5">
+          <p className="flex items-center gap-2 font-medium">
+            <Wand2 className="h-4 w-4 text-gold" /> Not sure what to order? Describe what you need.
+          </p>
+          <Textarea
+            placeholder="e.g. Drinks and snacks for a small resort shop, mostly isotonic drinks and cakes"
+            value={need}
+            onChange={(e) => setNeed(e.target.value)}
+          />
+          <Button className="h-11" disabled={need.trim().length < 3 || ask.isPending} onClick={() => ask.mutate()}>
+            {ask.isPending ? "Finding products…" : "Suggest products"}
+          </Button>
+          {recs && (
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">{recs.summary}</p>
+              {recs.items.length === 0 && <p className="text-sm">No matching products found.</p>}
+              {recs.items.map((r) => {
+                const product = byId.get(r.id);
+                if (!product) return null;
+                return (
+                  <div key={r.id} className="flex items-center gap-3 rounded-md border border-border p-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium">{product.name}</p>
+                      <p className="text-sm text-muted-foreground">{r.reason}</p>
+                      <p className="stat-label">{formatMoney(product.default_price)} · {formatCbm(product.cbm_per_carton)}</p>
+                    </div>
+                    <Button size="sm" onClick={() => addLine.mutate(product)} disabled={addLine.isPending}>
+                      Add
+                    </Button>
+                  </div>
+                );
+              })}
+              <Button variant="ghost" size="sm" onClick={() => setRecs(null)}>Clear suggestions</Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
       <div className="relative">
         <Search className="absolute top-3.5 left-3 h-4 w-4 text-muted-foreground" />
         <Input

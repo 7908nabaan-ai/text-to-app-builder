@@ -43,12 +43,25 @@ function AuthPage() {
   const [phone, setPhone] = useState("");
   const [busy, setBusy] = useState(false);
   const [invite, setInvite] = useState<InviteCheck | null>(null);
+  const [oauthError, setOauthError] = useState<string | null>(null);
 
   useEffect(() => {
     void supabase.auth.getSession().then(({ data }) => {
       if (data.session) navigate({ to: "/dashboard" });
     });
   }, [navigate]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search.replace(/^\?/, "") + "&" + window.location.hash.replace(/^#/, ""));
+    const desc = params.get("error_description");
+    if (desc) {
+      setOauthError(
+        /invit|database error|42501/i.test(desc)
+          ? "This Google account has not been invited to this Sky Plus workspace. Please contact your administrator."
+          : desc,
+      );
+    }
+  }, []);
 
   useEffect(() => {
     if (!inviteToken) {
@@ -111,7 +124,12 @@ function AuthPage() {
       redirect_uri: window.location.origin,
     });
     if (result.error) {
-      toast.error("Google sign-in failed. Please try again.");
+      const msg = String((result.error as { message?: string }).message ?? "");
+      setOauthError(
+        /invit|database error|42501/i.test(msg)
+          ? "This Google account has not been invited to this Sky Plus workspace. Please contact your administrator."
+          : "Google sign-in failed. Please try again.",
+      );
       setBusy(false);
       return;
     }
@@ -128,7 +146,7 @@ function AuthPage() {
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>
-            {mode === "signin" ? "Sign in" : mode === "signup" ? "Create account" : "Reset password"}
+            {mode === "signin" ? "Sign in to Sky Plus" : mode === "signup" ? "Create account" : "Reset password"}
           </CardTitle>
           <CardDescription>
             {mode === "reset"
@@ -140,6 +158,23 @@ function AuthPage() {
 
         </CardHeader>
         <CardContent className="space-y-4">
+          {oauthError && (
+            <p className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+              {oauthError}
+            </p>
+          )}
+          {mode !== "reset" && (
+            <>
+              <Button type="button" className="h-12 w-full text-base" onClick={handleGoogle} disabled={busy}>
+                Continue with Google
+              </Button>
+              <div className="flex items-center gap-3">
+                <span className="h-px flex-1 bg-border" />
+                <span className="stat-label">or use email</span>
+                <span className="h-px flex-1 bg-border" />
+              </div>
+            </>
+          )}
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === "signup" && (
               <>
@@ -203,29 +238,10 @@ function AuthPage() {
                 />
               </div>
             )}
-            <Button type="submit" className="h-11 w-full" disabled={busy}>
+            <Button type="submit" variant="outline" className="h-11 w-full" disabled={busy}>
               {mode === "signin" ? "Sign in" : mode === "signup" ? "Create account" : "Send link"}
             </Button>
           </form>
-
-          {mode !== "reset" && (
-            <>
-              <div className="flex items-center gap-3">
-                <span className="h-px flex-1 bg-border" />
-                <span className="stat-label">or</span>
-                <span className="h-px flex-1 bg-border" />
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                className="h-11 w-full"
-                onClick={handleGoogle}
-                disabled={busy}
-              >
-                Continue with Google
-              </Button>
-            </>
-          )}
 
           <div className="space-y-2 text-center text-sm text-muted-foreground">
             {mode === "signin" && (
@@ -234,6 +250,7 @@ function AuthPage() {
                   Forgot your password?
                 </button>
                 <p>New customers can only join with an invitation link from Sky Plus.</p>
+                <Link to="/contact" className="block underline">Contact administrator</Link>
               </>
             )}
 
