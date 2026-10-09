@@ -2,7 +2,8 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Container, Minus, Plus, Search, Trash2 } from "lucide-react";
+import { Container, MessageCircle, Minus, Plus, Search, Trash2 } from "lucide-react";
+import bannerImage from "@/assets/catalog-warehouse.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,8 +13,8 @@ import { ProductPhoto } from "@/components/product-photo";
 import { formatCbm, formatKg } from "@/lib/calc";
 import { useCurrency } from "@/lib/currency";
 import { STATUS_LABELS, addProductToOrder, createOrder, logOrderEvent, type OrderLine } from "@/lib/orders";
-import { BottomTotals, LineStatus, OrderSidePanels } from "@/components/order-panels";
-import { LiveOrderPanel, ProductTile, useCatalogProducts, useFavourites, type CatalogProduct } from "@/components/ordering";
+import { LineStatus, NegotiationChat, OrderHeaderCard, RecentChanges, lineStatus } from "@/components/order-panels";
+import { LiveOrderPanel, ProductTile, orderLoad, useCatalogProducts, useFavourites, type CatalogProduct } from "@/components/ordering";
 import { cn } from "@/lib/utils";
 
 type Line = OrderLine & { gross_weight_kg: number };
@@ -198,59 +199,65 @@ export function QuickOrder({ userId, orderId, onSelectOrder }: { userId: string;
   const PAGE = 15;
   const shown = tab === "all" ? lists.all.slice(page * PAGE, (page + 1) * PAGE) : lists[tab];
 
+  const load = orderLoad(order, lines);
+  const activeMain = mains.find((m) => m.id === mainId);
   return (
-    <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_300px]">
+    <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_330px]">
       <div className="min-w-0 space-y-4">
-        <div className="flex flex-wrap items-center gap-2">
-          {openOrders.length > 1 && (
-            <select aria-label="Order" className="h-9 rounded-md border border-input bg-card px-2 text-sm" value={order.id} onChange={(e) => onSelectOrder(e.target.value)}>
-              {openOrders.map((o) => <option key={o.id} value={o.id}>{o.order_number} · {o.container_name ?? ""}</option>)}
-            </select>
-          )}
-          <Badge variant="secondary">{STATUS_LABELS[order.status]}</Badge>
-          <Button size="sm" variant="outline" className="ml-auto" onClick={() => setNewOrder(true)}>New order</Button>
-        </div>
-
-        <div className="relative">
-          <Search className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
-          <Input autoFocus className="h-11 pl-9" placeholder="Type a product name or SKU…" value={term} onChange={(e) => setTerm(e.target.value)} aria-label="Search products" />
-          {matches.length > 0 && (
-            <ul className="absolute z-20 mt-1 w-full overflow-hidden rounded-md border border-border bg-card shadow-lg">
-              {matches.map((p) => (
-                <li key={p.id} className="flex items-center gap-3 border-b border-border px-3 py-2 last:border-0">
-                  <ProductPhoto path={p.image_path} alt={p.name} className="h-10 w-10" />
-                  <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{p.name}</p><p className="text-xs text-muted-foreground">{p.sku} · {p.unit} · {formatCbm(Number(p.cbm_per_carton))} · {money(Number(p.default_price))}</p></div>
-                  <Button size="sm" disabled={add.isPending} onClick={() => add.mutate(p)}><Plus className="h-4 w-4" />Add{qtyBySku.get(p.sku) ? ` (${qtyBySku.get(p.sku)})` : ""}</Button>
-                </li>
-              ))}
-            </ul>
-          )}
-          {q && matches.length === 0 && <p className="mt-2 text-sm text-muted-foreground">No products match “{term}”.</p>}
-        </div>
-
-
-        <section className="space-y-3">
-          <div className="flex flex-wrap gap-2">
-            {([["all", "All products"], ["favourites", "Favourites"], ["recent", "Recently ordered"], ["frequent", "Frequently ordered"]] as const).map(([k, label]) => (
-              <Button key={k} size="sm" variant={tab === k ? "default" : "outline"} onClick={() => { setTab(k); setPage(0); }}>{label}</Button>
-            ))}
+        <div className="relative overflow-hidden rounded-md bg-sidebar text-sidebar-foreground">
+          <img src={bannerImage} alt="" className="absolute inset-0 h-full w-full object-cover opacity-40" />
+          <div className="relative px-6 py-5">
+            <p className="font-display text-lg font-bold uppercase">Quality products</p>
+            <p className="font-display text-2xl font-bold uppercase">For a brighter tomorrow</p>
+            <p className="mt-1 text-xs uppercase tracking-wide">{mains.map((m) => m.name).join("  |  ") || "Food  |  Non-food"}  |  And more</p>
           </div>
-          {tab === "all" && (
-            <div className="space-y-2">
-              <div className="flex gap-2 overflow-x-auto pb-1">
-                <Button size="sm" variant={mainId === null ? "secondary" : "ghost"} onClick={() => { setMainId(null); setDeptId(null); setPage(0); }}>All categories</Button>
-                {mains.map((m) => <Button key={m.id} size="sm" className="shrink-0" variant={mainId === m.id ? "secondary" : "ghost"} onClick={() => { setMainId(m.id); setDeptId(null); setPage(0); }}>{m.name}</Button>)}
-              </div>
-              {mainId && depts.length > 0 && (
-                <div className="flex gap-2 overflow-x-auto pb-1">
-                  <Button size="sm" variant={deptId === null ? "outline" : "ghost"} className="h-7 text-xs" onClick={() => { setDeptId(null); setPage(0); }}>All {mains.find((m) => m.id === mainId)?.name}</Button>
-                  {depts.map((d) => <Button key={d.id} size="sm" className="h-7 shrink-0 text-xs" variant={deptId === d.id ? "outline" : "ghost"} onClick={() => { setDeptId(d.id); setPage(0); }}>{d.name}</Button>)}
-                </div>
-              )}
+        </div>
+
+        <section className="space-y-3 rounded-md border border-border bg-card p-4">
+          <p className="text-xs text-muted-foreground">Home <span className="mx-1">›</span> <span className="text-primary">{activeMain?.name ?? "All products"}</span></p>
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="font-display text-xl font-bold">{depts.find((d) => d.id === deptId)?.name ?? activeMain?.name ?? "All products"}</h2>
+            {openOrders.length > 1 && (
+              <select aria-label="Order" className="ml-auto h-9 rounded-md border border-input bg-card px-2 text-sm" value={order.id} onChange={(e) => onSelectOrder(e.target.value)}>
+                {openOrders.map((o) => <option key={o.id} value={o.id}>{o.order_number} · {o.container_name ?? ""}</option>)}
+              </select>
+            )}
+            <Button size="sm" variant="outline" className={openOrders.length > 1 ? "" : "ml-auto"} onClick={() => setNewOrder(true)}>New order</Button>
+          </div>
+          <div className="relative">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Input className="h-10 pl-9" placeholder="Type a product name or SKU…" value={term} onChange={(e) => setTerm(e.target.value)} aria-label="Search products" />
+            {matches.length > 0 && (
+              <ul className="absolute z-20 mt-1 w-full overflow-hidden rounded-md border border-border bg-card shadow-lg">
+                {matches.map((p) => (
+                  <li key={p.id} className="flex items-center gap-3 border-b border-border px-3 py-2 last:border-0">
+                    <ProductPhoto path={p.image_path} alt={p.name} className="h-10 w-10" />
+                    <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{p.name}</p><p className="text-xs text-muted-foreground">{p.sku} · {p.unit} · {formatCbm(Number(p.cbm_per_carton))} · {money(Number(p.default_price))}</p></div>
+                    <Button size="sm" disabled={add.isPending} onClick={() => add.mutate(p)}><Plus className="h-4 w-4" />Add{qtyBySku.get(p.sku) ? ` (${qtyBySku.get(p.sku)})` : ""}</Button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {q && matches.length === 0 && <p className="mt-2 text-sm text-muted-foreground">No products match “{term}”.</p>}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button size="sm" variant={tab === "all" && mainId === null ? "default" : "secondary"} onClick={() => { setTab("all"); setMainId(null); setDeptId(null); setPage(0); }}>All</Button>
+            {mains.map((m) => <Button key={m.id} size="sm" variant={tab === "all" && mainId === m.id ? "default" : "secondary"} onClick={() => { setTab("all"); setMainId(m.id); setDeptId(null); setPage(0); }}>{m.name}</Button>)}
+            <select aria-label="Show" className="ml-auto h-9 rounded-md border border-input bg-card px-2 text-sm" value={tab} onChange={(e) => { setTab(e.target.value as typeof tab); setPage(0); }}>
+              <option value="all">Show: All products</option>
+              <option value="favourites">Show: Favourites</option>
+              <option value="recent">Show: Recently ordered</option>
+              <option value="frequent">Show: Frequently ordered</option>
+            </select>
+          </div>
+          {tab === "all" && mainId && depts.length > 0 && (
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              <Button size="sm" variant={deptId === null ? "outline" : "ghost"} className="h-7 text-xs" onClick={() => { setDeptId(null); setPage(0); }}>All {activeMain?.name}</Button>
+              {depts.map((d) => <Button key={d.id} size="sm" className="h-7 shrink-0 text-xs" variant={deptId === d.id ? "outline" : "ghost"} onClick={() => { setDeptId(d.id); setPage(0); }}>{d.name}</Button>)}
             </div>
           )}
           {shown.length === 0 ? <p className="text-sm text-muted-foreground">{tab === "favourites" ? "Tap the heart on a product to save it here." : "Nothing here yet."}</p> : (
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-6">
               {shown.map((p) => <ProductTile key={p.id} product={p} quantity={qtyBySku.get(p.sku)} adding={add.isPending} onAdd={() => add.mutate(p)} favourite={favs.ids.has(p.id)} onFavourite={() => favs.toggle(p.id)} />)}
             </div>
           )}
@@ -261,43 +268,68 @@ export function QuickOrder({ userId, orderId, onSelectOrder }: { userId: string;
             </div>
           )}
         </section>
-        <section className="space-y-2">
-          <h2 className="font-display text-lg font-bold">Current order</h2>
-          {lines.length === 0 ? <EmptyState title="No products yet" description="Search above or pick from the lists below." /> : (
-            <div className="overflow-x-auto rounded-md border border-border bg-card">
-              <table className="w-full min-w-160 text-left text-xs">
-                <thead><tr><th>Product</th><th>Packing</th><th>Cartons</th><th>CBM</th><th>Weight</th><th>Unit price</th><th>Total</th><th>Status</th><th /></tr></thead>
-                <tbody>{lines.map((l) => (
+
+        <section className="space-y-3 rounded-md border border-border bg-card p-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <h2 className="font-display text-lg font-bold">Current Order</h2>
+            <span className="ml-auto text-sm text-muted-foreground">Container Type:</span>
+            <span className="rounded-md border border-input px-3 py-1.5 text-sm font-medium">{order.container_name ?? "—"}</span>
+            <Button size="sm" variant="outline" onClick={() => document.querySelector<HTMLInputElement>('input[aria-label="Search products"]')?.focus()}><Plus className="h-4 w-4" />Add More Products</Button>
+          </div>
+          {lines.length === 0 ? <EmptyState title="No products yet" description="Search or tap Add on a product above." /> : (
+            <div className="overflow-x-auto rounded-md border border-border">
+              <table className="w-full min-w-200 text-left text-xs">
+                <thead className="bg-muted/60"><tr><th className="w-10">No.</th><th>Product</th><th>Packing</th><th className="text-center">Qty (CTN)</th><th>CBM / CTN</th><th>Total CBM</th><th>Unit Price</th><th className="text-right">Total</th><th>Status</th><th className="text-center">Action</th></tr></thead>
+                <tbody>{lines.map((l, i) => {
+                  const st = lineStatus(l).label;
+                  return (
                   <tr key={l.id}>
-                    <td><div className="flex items-center gap-2"><ProductPhoto path={l.image_path} alt={l.product_name} className="h-10 w-10" /><div className="min-w-28"><p className="font-semibold">{l.product_name}</p><p className="text-muted-foreground">{l.sku}</p></div></div></td>
+                    <td>{i + 1}</td>
+                    <td><div className="flex items-center gap-2"><ProductPhoto path={l.image_path} alt={l.product_name} className="h-8 w-8" /><div className="min-w-28"><p className="font-medium">{l.product_name}</p><p className="text-[10px] text-muted-foreground">{l.sku}</p></div></div></td>
                     <td>{l.unit}</td>
-                    <td><div className="flex items-center gap-1">
-                      <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => setQty.mutate({ line: l, quantity: l.current_quantity - 1 })} aria-label={`Decrease ${l.product_name}`}><Minus /></Button>
-                      <Input type="number" min={0} aria-label={`Cartons of ${l.product_name}`} className="h-7 w-16 px-1 text-center text-xs" key={`${l.id}-${l.current_quantity}`} defaultValue={l.current_quantity} onBlur={(e) => { const n = Math.max(0, Math.floor(Number(e.target.value) || 0)); if (n !== l.current_quantity) setQty.mutate({ line: l, quantity: n }); }} />
-                      <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => setQty.mutate({ line: l, quantity: l.current_quantity + 1 })} aria-label={`Increase ${l.product_name}`}><Plus /></Button>
+                    <td><div className={cn("mx-auto flex w-fit items-center rounded-md border border-input", st.startsWith("Changed") && "bg-primary/10", st === "Pre-order" && "bg-gold/10")}>
+                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setQty.mutate({ line: l, quantity: l.current_quantity - 1 })} aria-label={`Decrease ${l.product_name}`}><Minus /></Button>
+                      <Input type="number" min={0} aria-label={`Cartons of ${l.product_name}`} className="h-7 w-14 border-0 bg-transparent px-1 text-center text-xs shadow-none" key={`${l.id}-${l.current_quantity}`} defaultValue={l.current_quantity} onBlur={(e) => { const n = Math.max(0, Math.floor(Number(e.target.value) || 0)); if (n !== l.current_quantity) setQty.mutate({ line: l, quantity: n }); }} />
+                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setQty.mutate({ line: l, quantity: l.current_quantity + 1 })} aria-label={`Increase ${l.product_name}`}><Plus /></Button>
                     </div></td>
-                    <td>{(Number(l.cbm_per_carton) * l.current_quantity).toFixed(3)}</td>
-                    <td>{formatKg(Number(l.gross_weight_kg ?? 0) * l.current_quantity)}</td>
+                    <td>{Number(l.cbm_per_carton).toFixed(3)}</td>
+                    <td>{(Number(l.cbm_per_carton) * l.current_quantity).toFixed(2)}</td>
                     <td>{money(Number(l.negotiated_price))}</td>
-                    <td className="font-semibold">{money(Number(l.negotiated_price) * l.current_quantity)}</td>
+                    <td className="text-right font-semibold">{money(Number(l.negotiated_price) * l.current_quantity)}</td>
                     <td><LineStatus line={l} /></td>
-                    <td><Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => setQty.mutate({ line: l, quantity: 0 })} aria-label={`Remove ${l.product_name}`}><Trash2 /></Button></td>
+                    <td className="text-center"><Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => setQty.mutate({ line: l, quantity: 0 })} aria-label={`Remove ${l.product_name}`}><Trash2 /></Button></td>
                   </tr>
-                ))}</tbody>
+                ); })}</tbody>
               </table>
             </div>
           )}
+          <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
+            <div className="flex flex-wrap gap-x-4 gap-y-2 text-[11px]">
+              {([["bg-success", "Available / OK"], ["bg-primary", "Changed by Sky Plus"], ["bg-gold", "Pre-order / Limited"], ["bg-destructive", "Removed / Not available"]] as const).map(([c, label]) => (
+                <span key={label} className="flex items-center gap-1.5"><span className={cn("h-4 w-4 rounded-sm", c)} />{label}</span>
+              ))}
+            </div>
+            <dl className="w-full max-w-sm divide-y divide-border rounded-md border border-border text-xs">
+              {[["Total Cartons", `${load.totalCartons} CTN`], ["Total CBM", `${load.totalCbm.toFixed(2)} / ${load.capacityCbm.toFixed(1)} CBM`], ["Total Weight (est.)", formatKg(load.totalWeightKg)], ["Total Value", money(load.totalValue)]].map(([k, v]) => (
+                <div key={k} className="grid grid-cols-2"><dt className="bg-muted/60 px-3 py-2 font-semibold">{k}</dt><dd className="px-3 py-2 text-center font-bold">{v}</dd></div>
+              ))}
+            </dl>
+          </div>
+          {(load.isOverCapacity || load.isOverWeight) && <p className="rounded-md bg-destructive/10 p-2 text-xs text-destructive">Over the container {load.isOverCapacity ? "volume" : "weight"} limit. You can still submit — Sky Plus will review it with you.</p>}
+          <div className="flex flex-wrap gap-2 border-t border-border pt-3">
+            <Button variant="outline" disabled={lines.length === 0 || setQty.isPending} onClick={() => { if (confirm("Remove all products from this order?")) lines.forEach((l) => setQty.mutate({ line: l, quantity: 0 })); }}><Trash2 className="h-4 w-4" />Clear Order</Button>
+            <Button variant="outline" className="ml-auto border-primary text-primary" onClick={() => toast.success("Order saved — changes are saved automatically")}>Save Order</Button>
+            <Button disabled={lines.length === 0 || submit.isPending} onClick={() => submit.mutate()}>{order.status === "draft" ? "Submit to Sky Plus" : "Send my response"}</Button>
+            <Button variant="success" onClick={() => document.getElementById("order-chat")?.scrollIntoView({ behavior: "smooth" })}><MessageCircle className="h-4 w-4" />Message Sky Plus</Button>
+          </div>
         </section>
-        <BottomTotals order={order} lines={lines} />
       </div>
 
       <div className="space-y-4 xl:sticky xl:top-20 xl:max-h-[calc(100vh-6rem)] xl:overflow-y-auto">
-        <LiveOrderPanel order={order} lines={lines} sticky={false}>
-          <Button className={cn("h-11 w-full")} disabled={lines.length === 0 || submit.isPending} onClick={() => submit.mutate()}>
-            {order.status === "draft" ? "Submit order" : "Send my response"}
-          </Button>
-        </LiveOrderPanel>
-        <OrderSidePanels order={order} />
+        <OrderHeaderCard order={order} statusLabel={STATUS_LABELS[order.status]} />
+        <NegotiationChat orderId={order.id} compact />
+        <RecentChanges orderId={order.id} />
+        <LiveOrderPanel order={order} lines={lines} sticky={false} />
       </div>
     </div>
   );
