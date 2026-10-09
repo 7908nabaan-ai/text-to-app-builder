@@ -1,7 +1,7 @@
 # Sky Plus roadmap
 
-- [ ] Verify invitation Google sign-in while preserving customer records
-- [ ] Check invitation sign-in on desktop, tablet and phone previews
+- [x] Check invitation Google sign-in configuration and account selection while preserving customer records (provider enabled; actual Google consent requires customer's account)
+- [x] Check invitation sign-in on desktop, tablet and phone previews
 
 - [x] Number displayed business lists and verify numbering without changing actions (catalogue checked on desktop/mobile; app checks pass)
 
