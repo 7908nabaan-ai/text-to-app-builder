@@ -39,6 +39,8 @@ export type OrderLine = {
   current_quantity: number;
   final_quantity: number | null;
   approval_status?: string;
+  gross_weight_kg?: number;
+  availability?: string;
 };
 
 export async function logOrderEvent(input: {
