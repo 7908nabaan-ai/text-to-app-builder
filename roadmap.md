@@ -1,5 +1,7 @@
 # Sky Plus roadmap
 
+- [x] Show each customer item immediately above its Sky Plus proposal in staff review and customer order details; preserved calculations and editing behavior; verified four paired items on both pages in signed-in preview
+
 - [x] Add invited customer username/password/confirmation signup and visible Create account / Sign in choices; invitation restriction checked in browser, password matching checked in code (live account creation not tested)
 
 - [x] Check invitation Google sign-in configuration and account selection while preserving customer records (provider enabled; actual Google consent requires customer's account)
