@@ -68,6 +68,19 @@ export function QuickOrder({ userId, orderId, onSelectOrder }: { userId: string;
   const [term, setTerm] = useState("");
   const [tab, setTab] = useState<"favourites" | "recent" | "frequent" | "all">("all");
   const [newOrder, setNewOrder] = useState(false);
+  const [mainId, setMainId] = useState<string | null>(null);
+  const [deptId, setDeptId] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+  const { data: categories = [] } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("categories").select("*").eq("is_active", true).order("sort_order");
+      if (error) throw error;
+      return data;
+    },
+  });
+  const mains = categories.filter((c) => !c.parent_id);
+  const depts = categories.filter((c) => c.parent_id === mainId);
 
   const { data: openOrders = [], isLoading } = useQuery({
     queryKey: ["customer-orders", userId, "editable"],
@@ -111,8 +124,12 @@ export function QuickOrder({ userId, orderId, onSelectOrder }: { userId: string;
     pastLines.forEach((l) => l.product_id && counts.set(l.product_id, (counts.get(l.product_id) ?? 0) + 1));
     const frequentIds = [...counts].sort((a, b) => b[1] - a[1]).map(([id]) => id);
     const pick = (ids: string[]) => ids.map((id) => byId.get(id)).filter(Boolean).slice(0, 20) as CatalogProduct[];
-    return { recent: pick(recentIds), frequent: pick(frequentIds), favourites: pick([...favs.ids]), all: products.slice(0, 20) };
-  }, [pastLines, byId, favs.ids, products]);
+    return { recent: pick(recentIds), frequent: pick(frequentIds), favourites: pick([...favs.ids]), all: products.filter((p) => {
+      if (deptId) return p.category_id === deptId;
+      if (mainId) { const ids = new Set([mainId, ...categories.filter((c) => c.parent_id === mainId).map((d) => d.id)]); return Boolean(p.category_id && ids.has(p.category_id)); }
+      return true;
+    }) };
+  }, [pastLines, byId, favs.ids, products, mainId, deptId, categories]);
 
   const q = term.trim().toLowerCase();
   const matches = q ? products.filter((p) => p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q)).slice(0, 8) : [];
@@ -177,7 +194,8 @@ export function QuickOrder({ userId, orderId, onSelectOrder }: { userId: string;
     );
   }
 
-  const shown = lists[tab];
+  const PAGE = 15;
+  const shown = tab === "all" ? lists.all.slice(page * PAGE, (page + 1) * PAGE) : lists[tab];
 
   return (
     <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_300px]">
@@ -238,17 +256,37 @@ export function QuickOrder({ userId, orderId, onSelectOrder }: { userId: string;
 
         <section className="space-y-3">
           <div className="flex flex-wrap gap-2">
-            {([["all", "Popular"], ["favourites", "Favourites"], ["recent", "Recently ordered"], ["frequent", "Frequently ordered"]] as const).map(([k, label]) => (
-              <Button key={k} size="sm" variant={tab === k ? "default" : "outline"} onClick={() => setTab(k)}>{label}</Button>
+            {([["all", "All products"], ["favourites", "Favourites"], ["recent", "Recently ordered"], ["frequent", "Frequently ordered"]] as const).map(([k, label]) => (
+              <Button key={k} size="sm" variant={tab === k ? "default" : "outline"} onClick={() => { setTab(k); setPage(0); }}>{label}</Button>
             ))}
-            <Button size="sm" variant="ghost" onClick={() => void navigate({ to: "/catalog" })}>Browse full catalogue</Button>
           </div>
+          {tab === "all" && (
+            <div className="space-y-2">
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                <Button size="sm" variant={mainId === null ? "secondary" : "ghost"} onClick={() => { setMainId(null); setDeptId(null); setPage(0); }}>All categories</Button>
+                {mains.map((m) => <Button key={m.id} size="sm" className="shrink-0" variant={mainId === m.id ? "secondary" : "ghost"} onClick={() => { setMainId(m.id); setDeptId(null); setPage(0); }}>{m.name}</Button>)}
+              </div>
+              {mainId && depts.length > 0 && (
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  <Button size="sm" variant={deptId === null ? "outline" : "ghost"} className="h-7 text-xs" onClick={() => { setDeptId(null); setPage(0); }}>All {mains.find((m) => m.id === mainId)?.name}</Button>
+                  {depts.map((d) => <Button key={d.id} size="sm" className="h-7 shrink-0 text-xs" variant={deptId === d.id ? "outline" : "ghost"} onClick={() => { setDeptId(d.id); setPage(0); }}>{d.name}</Button>)}
+                </div>
+              )}
+            </div>
+          )}
           {shown.length === 0 ? <p className="text-sm text-muted-foreground">{tab === "favourites" ? "Tap the heart on a product to save it here." : "Nothing here yet."}</p> : (
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
               {shown.map((p) => <ProductTile key={p.id} product={p} quantity={qtyBySku.get(p.sku)} adding={add.isPending} onAdd={() => add.mutate(p)} favourite={favs.ids.has(p.id)} onFavourite={() => favs.toggle(p.id)} />)}
             </div>
           )}
+          {tab === "all" && lists.all.length > PAGE && (
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">{page * PAGE + 1}–{Math.min((page + 1) * PAGE, lists.all.length)} of {lists.all.length}</span>
+              <div className="flex gap-2"><Button size="sm" variant="outline" disabled={page === 0} onClick={() => setPage(page - 1)}>Previous</Button><Button size="sm" variant="outline" disabled={(page + 1) * PAGE >= lists.all.length} onClick={() => setPage(page + 1)}>Next</Button></div>
+            </div>
+          )}
         </section>
+        <BottomTotals order={order} lines={lines} />
       </div>
 
       <LiveOrderPanel order={order} lines={lines}>
