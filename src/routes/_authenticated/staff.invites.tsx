@@ -15,6 +15,8 @@ import { Copy, Link2, Send, X } from "lucide-react";
 export const Route = createFileRoute("/_authenticated/staff/invites")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "Customer invitations — Sky Plus" },
       {
         name: "description",

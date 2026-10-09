@@ -19,6 +19,8 @@ import { useContainerTypes } from "@/components/quick-order";
 export const Route = createFileRoute("/_authenticated/staff/orders/$orderId")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "Order review — Sky Plus" },
       { name: "description", content: "Review quantities, prices and status for a customer order." },
       { property: "og:title", content: "Order review — Sky Plus" },
@@ -200,7 +202,7 @@ function OrderBody({ orderId, isOwner }: { orderId: string; isOwner: boolean }) 
       if (error) throw error;
 
       if (status === "confirmed") {
-        const updates = lines.map((line, index) =>
+        const updates = lines.map((line) =>
           supabase
             .from("order_lines")
             .update({ final_quantity: line.current_quantity })
@@ -314,7 +316,7 @@ function OrderBody({ orderId, isOwner }: { orderId: string; isOwner: boolean }) 
         );
       })()}
 
-      {lines.map((line) => (
+      {lines.map((line, index) => (
         <Card key={line.id}>
           <CardContent className="space-y-3 pt-5">
             <div className="flex items-start justify-between gap-2">

@@ -124,7 +124,7 @@ export function CustomerOrder({ userId }: { userId: string }) {
   }
 
   const totals = calcOrderTotals(
-    lines.map((line, index) => ({
+    lines.map((line) => ({
       cbmPerCarton: Number(line.cbm_per_carton),
       quantity: line.final_quantity ?? line.current_quantity,
       price: line.negotiated_price,
@@ -173,7 +173,7 @@ export function CustomerOrder({ userId }: { userId: string }) {
         <div className="overflow-x-auto rounded-md border border-border bg-card">
           <table className="w-full min-w-160 text-left text-xs">
             <thead><tr><th scope="col">No.</th><th>Product</th><th>Packing</th><th>Qty / CTN</th><th>CBM / CTN</th><th>Total CBM</th><th>Unit price</th><th>Total</th><th>Status</th><th /></tr></thead>
-            <tbody>{lines.map((line) => {
+            <tbody>{lines.map((line, index) => {
               const quantity = line.final_quantity ?? line.current_quantity;
               return <tr key={line.id}><td className="tabular-nums">{index + 1}</td>
                 <td><div className="flex items-center gap-2"><ProductPhoto path={line.image_path} alt={line.product_name} className="h-9 w-9" /><div className="min-w-28"><p className="font-semibold">{line.product_name}</p><p className="text-muted-foreground">{line.sku}</p></div></div></td>

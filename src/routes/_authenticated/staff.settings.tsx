@@ -13,6 +13,8 @@ import { Card, CardContent } from "@/components/ui/card";
 export const Route = createFileRoute("/_authenticated/staff/settings")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "Company settings — Sky Plus" },
       { name: "description", content: "Company details, contact numbers and container types." },
       { property: "og:title", content: "Company settings — Sky Plus" },

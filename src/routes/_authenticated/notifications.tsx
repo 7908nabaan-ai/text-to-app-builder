@@ -8,6 +8,8 @@ import { Card, CardContent } from "@/components/ui/card";
 export const Route = createFileRoute("/_authenticated/notifications")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "Notifications — Sky Plus" },
       { name: "description", content: "Updates about your orders, invoices and shipments." },
       { property: "og:title", content: "Notifications — Sky Plus" },

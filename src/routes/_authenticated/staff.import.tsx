@@ -107,7 +107,7 @@ async function buildRows(norm: Record<string, unknown>[], images: Map<string, Bl
 
 function revalidate(rows: Row[], existingSkus: Set<string>): Row[] {
   const seen = new Map<string, number>();
-  return rows.map((r, index) => {
+  return rows.map((r) => {
     const errors: string[] = [];
     const warnings = r.warnings.filter((w) => !w.startsWith("Will update"));
     if (!r.sku) errors.push("Missing product code");
@@ -323,7 +323,7 @@ function ImportBody() {
             </div>
           </div>
           <div className="space-y-2">
-            {rows.map((r) => (
+            {rows.map((r, index) => (
               <Card key={r.line} className={r.errors.length ? "border-destructive" : ""}>
                 <CardContent className="space-y-1 pt-4">
                   <div className="flex items-start justify-between gap-2">

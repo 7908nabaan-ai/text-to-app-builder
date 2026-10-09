@@ -16,6 +16,8 @@ export const Route = createFileRoute("/auth")({
   validateSearch: z.object({ invite: z.string().optional() }),
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "Sign in — Sky Plus" },
       {
         name: "description",

@@ -14,6 +14,8 @@ import { ContactButtons } from "@/components/contact-buttons";
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "My profile — Sky Plus" },
       { name: "description", content: "Your contact, company and shipping details on Sky Plus." },
       { property: "og:title", content: "My profile — Sky Plus" },

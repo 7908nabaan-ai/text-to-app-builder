@@ -13,6 +13,8 @@ import { downloadExcel, downloadPdf } from "@/lib/exports";
 export const Route = createFileRoute("/_authenticated/invoices")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "Invoices — Sky Plus" },
       { name: "description", content: "Proforma and commercial invoices with balances." },
       { property: "og:title", content: "Invoices — Sky Plus" },
@@ -120,7 +122,7 @@ function InvoiceDetail({
     downloadExcel(`${invoice.invoice_number}-v${invoice.version}.xlsx`, [{
       title: "Invoice",
       head: ["Code", "Product", "Unit", "Qty", "Price", "CBM", "Subtotal"],
-      rows: lines.map((l, index) => [l.sku, l.product_name, l.unit, l.quantity, Number(l.price), Number(l.total_cbm), Number(l.subtotal)]),
+      rows: lines.map((l) => [l.sku, l.product_name, l.unit, l.quantity, Number(l.price), Number(l.total_cbm), Number(l.subtotal)]),
     }, { title: "Summary", head: ["Item", "Amount"], rows: summary(paid) }]);
   };
   const exportPdf = async () => {
@@ -159,7 +161,7 @@ function InvoiceDetail({
         {formatMoney(Number(invoice.advance_amount), invoice.currency)}
       </p>
       <div className="space-y-1">
-        {lines.map((l) => (
+        {lines.map((l, index) => (
           <div key={l.id} className="flex justify-between gap-2 text-sm">
             <span>
               <span className="list-number">{index + 1}.</span> {l.product_name} <span className="text-muted-foreground">· {l.quantity} × {formatMoney(Number(l.price), invoice.currency)}</span>
