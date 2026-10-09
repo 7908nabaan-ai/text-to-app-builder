@@ -62,7 +62,7 @@ export function ContainerPicker({ userId, onCreated }: { userId: string; onCreat
 }
 
 /** Single-screen ordering: search, suggestions, lines and the live container panel. */
-export function QuickOrder({ userId, orderId, onSelectOrder }: { userId: string; orderId?: string; onSelectOrder: (id: string | undefined) => void }) {
+export function QuickOrder({ userId, orderId, onSelectOrder }: { userId: string; orderId?: string | undefined; onSelectOrder: (id: string | undefined) => void }) {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const { money } = useCurrency();

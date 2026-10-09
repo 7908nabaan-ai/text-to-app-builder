@@ -38,7 +38,7 @@ function Body({ userId, isStaff }: { userId: string; isStaff: boolean }) {
     },
   });
   if (orders.length === 0) return <EmptyState title="No conversations yet" description="Each order has its own chat with Sky Plus." />;
-  const current = selected ?? orders[0].id;
+  const current = selected ?? orders[0]!.id;
   return (
     <div className="grid gap-4 md:grid-cols-[240px_minmax(0,1fr)]">
       <ul className="space-y-1">

@@ -35,6 +35,7 @@ import { Route as AuthenticatedStaffImportRouteImport } from './routes/_authenti
 import { Route as AuthenticatedStaffInvitesRouteImport } from './routes/_authenticated/staff.invites'
 import { Route as AuthenticatedStaffProductsRouteImport } from './routes/_authenticated/staff.products'
 import { Route as AuthenticatedStaffSettingsRouteImport } from './routes/_authenticated/staff.settings'
+import { Route as AuthenticatedStaffOrdersIndexRouteImport } from './routes/_authenticated/staff.orders.index'
 import { Route as AuthenticatedStaffOrdersOrderIdRouteImport } from './routes/_authenticated/staff.orders.$orderId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -175,6 +176,12 @@ const AuthenticatedStaffSettingsRoute =
     path: '/staff/settings',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedStaffOrdersIndexRoute =
+  AuthenticatedStaffOrdersIndexRouteImport.update({
+    id: '/staff/orders/',
+    path: '/staff/orders/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedStaffOrdersOrderIdRoute =
   AuthenticatedStaffOrdersOrderIdRouteImport.update({
     id: '/staff/orders/$orderId',
@@ -209,6 +216,7 @@ export interface FileRoutesByFullPath {
   '/staff/settings': typeof AuthenticatedStaffSettingsRoute
   '/orders/': typeof AuthenticatedOrdersIndexRoute
   '/staff/orders/$orderId': typeof AuthenticatedStaffOrdersOrderIdRoute
+  '/staff/orders/': typeof AuthenticatedStaffOrdersIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -237,6 +245,7 @@ export interface FileRoutesByTo {
   '/staff/settings': typeof AuthenticatedStaffSettingsRoute
   '/orders': typeof AuthenticatedOrdersIndexRoute
   '/staff/orders/$orderId': typeof AuthenticatedStaffOrdersOrderIdRoute
+  '/staff/orders': typeof AuthenticatedStaffOrdersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -267,6 +276,7 @@ export interface FileRoutesById {
   '/_authenticated/staff/settings': typeof AuthenticatedStaffSettingsRoute
   '/_authenticated/orders/': typeof AuthenticatedOrdersIndexRoute
   '/_authenticated/staff/orders/$orderId': typeof AuthenticatedStaffOrdersOrderIdRoute
+  '/_authenticated/staff/orders/': typeof AuthenticatedStaffOrdersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -297,6 +307,7 @@ export interface FileRouteTypes {
     | '/staff/settings'
     | '/orders/'
     | '/staff/orders/$orderId'
+    | '/staff/orders/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -325,6 +336,7 @@ export interface FileRouteTypes {
     | '/staff/settings'
     | '/orders'
     | '/staff/orders/$orderId'
+    | '/staff/orders'
   id:
     | '__root__'
     | '/'
@@ -354,6 +366,7 @@ export interface FileRouteTypes {
     | '/_authenticated/staff/settings'
     | '/_authenticated/orders/'
     | '/_authenticated/staff/orders/$orderId'
+    | '/_authenticated/staff/orders/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -550,6 +563,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStaffSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/staff/orders/': {
+      id: '/_authenticated/staff/orders/'
+      path: '/staff/orders'
+      fullPath: '/staff/orders/'
+      preLoaderRoute: typeof AuthenticatedStaffOrdersIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/staff/orders/$orderId': {
       id: '/_authenticated/staff/orders/$orderId'
       path: '/staff/orders/$orderId'
@@ -581,6 +601,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedStaffSettingsRoute: typeof AuthenticatedStaffSettingsRoute
   AuthenticatedOrdersIndexRoute: typeof AuthenticatedOrdersIndexRoute
   AuthenticatedStaffOrdersOrderIdRoute: typeof AuthenticatedStaffOrdersOrderIdRoute
+  AuthenticatedStaffOrdersIndexRoute: typeof AuthenticatedStaffOrdersIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -604,6 +625,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedStaffSettingsRoute: AuthenticatedStaffSettingsRoute,
   AuthenticatedOrdersIndexRoute: AuthenticatedOrdersIndexRoute,
   AuthenticatedStaffOrdersOrderIdRoute: AuthenticatedStaffOrdersOrderIdRoute,
+  AuthenticatedStaffOrdersIndexRoute: AuthenticatedStaffOrdersIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

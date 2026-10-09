@@ -80,7 +80,7 @@ export function ProductTile({ product, onAdd, adding, favourite, onFavourite, qu
   adding?: boolean;
   favourite?: boolean;
   onFavourite?: () => void;
-  quantity?: number;
+  quantity?: number | undefined;
 }) {
   const { usd, myr } = useCurrency();
   return (
