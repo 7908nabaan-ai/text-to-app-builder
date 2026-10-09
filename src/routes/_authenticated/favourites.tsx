@@ -41,7 +41,7 @@ function Body({ userId }: { userId: string }) {
   if (list.length === 0) return <div className="space-y-3"><EmptyState title="No favourites yet" description="Tap the heart on any product while ordering." /><Button asChild><Link to="/catalog" search={{ order: "" }}>Go to ordering</Link></Button></div>;
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5">
-      {list.map((p) => <ProductTile key={p.id} product={p} onAdd={() => add.mutate(p)} adding={add.isPending} favourite onFavourite={() => favs.toggle(p.id)} />)}
+      {list.map((p, index) => <ProductTile key={p.id} number={index + 1} product={p} onAdd={() => add.mutate(p)} adding={add.isPending} favourite onFavourite={() => favs.toggle(p.id)} />)}
     </div>
   );
 }

@@ -115,11 +115,11 @@ function HistoryList({ isStaff }: { isStaff: boolean }) {
 
   return (
     <div className="space-y-3">
-      {data.map((order) => (
+      {data.map((order, index) => (
         <Card key={order.id}>
           <CardContent className="flex items-center justify-between gap-3 pt-5">
             <div>
-              <p className="font-medium">{order.order_number}</p>
+              <p className="font-medium"><span className="list-number">{index + 1}.</span> {order.order_number}</p>
               <p className="stat-label">
                 {order.shipped_at ? new Date(order.shipped_at).toLocaleDateString() : "—"}
               </p>

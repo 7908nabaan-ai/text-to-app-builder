@@ -72,14 +72,14 @@ function StaffOrders() {
 
   return (
     <div className="space-y-3">
-      {data.map((order) => {
+      {data.map((order, index) => {
         const profile = (order as unknown as { profiles?: { company_name: string | null; contact_name: string | null } | null }).profiles;
         return (
           <Link key={order.id} to="/staff/orders/$orderId" params={{ orderId: order.id }}>
             <Card className="transition-colors hover:border-accent">
               <CardContent className="flex items-center justify-between gap-3 pt-5">
                 <div>
-                  <p className="font-medium">{order.order_number}</p>
+                  <p className="font-medium"><span className="list-number">{index + 1}.</span> {order.order_number}</p>
                   <p className="text-sm text-muted-foreground">
                     {profile?.company_name || profile?.contact_name || "Customer"}
                   </p>

@@ -389,12 +389,12 @@ function ProductsBody() {
         <EmptyState title="No products yet" description="Add your first product above." />
       ) : (
         <div className="space-y-3">
-          {filtered.map((product) => (
+          {filtered.map((product, index) => (
             <Card key={product.id}>
               <CardContent className="flex items-start justify-between gap-3 pt-5">
                 <ProductPhoto path={product.image_path} alt={product.name} className="h-12 w-12" />
                 <div className="flex-1">
-                  <p className="font-medium">{product.name}</p>
+                  <p className="font-medium"><span className="list-number">{index + 1}.</span> {product.name}</p>
                   <p className="stat-label">
                     {product.sku} · {formatCbm(Number(product.cbm_per_carton))} ·{" "}
                     {formatMoney(Number(product.default_price))}

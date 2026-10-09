@@ -57,12 +57,12 @@ function OrdersList({ userId }: { userId: string }) {
   if (data.length === 0) return <EmptyState title="No orders in progress" description="Start a new order to choose your container." />;
   return (
     <div className="space-y-2">
-      {data.map((o) => {
+      {data.map((o, index) => {
         const negotiating = (NEGOTIATION_STATUSES as readonly string[]).includes(o.status);
         const needsYou = o.status === "awaiting_customer";
         return (
           <Link key={o.id} to="/orders/$orderId" params={{ orderId: o.id }} className={cn("flex flex-wrap items-center gap-3 rounded-md border bg-card p-4 hover:border-primary", needsYou ? "border-gold" : "border-border")}>
-            <div className="min-w-0 flex-1"><p className="font-semibold">{o.order_number}</p><p className="text-xs text-muted-foreground">{o.container_name} · {o.cartons} cartons · {formatCbm(o.cbm)} of {formatCbm(Number(o.container_capacity_cbm))}</p></div>
+            <div className="min-w-0 flex-1"><p className="font-semibold"><span className="list-number">{index + 1}.</span> {o.order_number}</p><p className="text-xs text-muted-foreground">{o.container_name} · {o.cartons} cartons · {formatCbm(o.cbm)} of {formatCbm(Number(o.container_capacity_cbm))}</p></div>
             <p className="font-bold">{money(o.value)}</p>
             {negotiating && <Badge variant="outline">Negotiation</Badge>}
             <Badge variant={needsYou ? "default" : "secondary"}>{STATUS_LABELS[o.status]}</Badge>

@@ -74,7 +74,8 @@ export function CurrencySwitch({ className }: { className?: string }) {
   );
 }
 
-export function ProductTile({ product, onAdd, adding, favourite, onFavourite, quantity }: {
+export function ProductTile({ product, onAdd, adding, favourite, onFavourite, quantity, number }: {
+  number?: number;
   product: CatalogProduct;
   onAdd?: () => void;
   adding?: boolean;
@@ -92,7 +93,7 @@ export function ProductTile({ product, onAdd, adding, favourite, onFavourite, qu
       )}
       <ProductPhoto path={product.image_path} alt={product.name} className="h-32 w-full rounded-none bg-muted" />
       <div className="flex flex-1 flex-col gap-1 p-2">
-        <p className="line-clamp-2 min-h-8 text-xs font-semibold leading-snug">{product.name}</p>
+        <p className="line-clamp-2 min-h-8 text-xs font-semibold leading-snug">{number != null && <span className="list-number">{number}.</span>} {product.name}</p>
         <p className="truncate text-[10px] text-muted-foreground">{product.sku} · {product.unit}</p>
         <p className="text-[10px] text-muted-foreground">{formatCbm(Number(product.cbm_per_carton))} · {product.gross_weight_kg ? formatKg(Number(product.gross_weight_kg)) : "weight —"}</p>
         <p className="text-sm font-bold">{usd(Number(product.default_price))}</p>

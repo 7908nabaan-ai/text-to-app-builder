@@ -200,3 +200,11 @@
 @media (prefers-reduced-motion: reduce) {
   .workspace * { transition: none; }
 }
+
+.list-number {
+  display: inline-block;
+  min-width: 1.5em;
+  margin-right: 0.25em;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}

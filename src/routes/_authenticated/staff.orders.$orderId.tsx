@@ -19,6 +19,8 @@ import { useContainerTypes } from "@/components/quick-order";
 export const Route = createFileRoute("/_authenticated/staff/orders/$orderId")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "Order review — Sky Plus" },
       { name: "description", content: "Review quantities, prices and status for a customer order." },
       { property: "og:title", content: "Order review — Sky Plus" },
@@ -314,12 +316,12 @@ function OrderBody({ orderId, isOwner }: { orderId: string; isOwner: boolean }) 
         );
       })()}
 
-      {lines.map((line) => (
+      {lines.map((line, index) => (
         <Card key={line.id}>
           <CardContent className="space-y-3 pt-5">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <p className="font-medium">{line.product_name}</p>
+                <p className="font-medium"><span className="list-number">{index + 1}.</span> {line.product_name}</p>
                 <p className="stat-label">
                   {line.sku} · requested {line.requested_quantity}
                 </p>

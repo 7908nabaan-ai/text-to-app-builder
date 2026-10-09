@@ -13,6 +13,8 @@ import { downloadExcel, downloadPdf } from "@/lib/exports";
 export const Route = createFileRoute("/_authenticated/invoices")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "Invoices — Sky Plus" },
       { name: "description", content: "Proforma and commercial invoices with balances." },
       { property: "og:title", content: "Invoices — Sky Plus" },
@@ -55,7 +57,7 @@ function InvoiceList({ isStaff }: { isStaff: boolean }) {
 
   return (
     <div className="space-y-3">
-      {data.map((invoice) => (
+      {data.map((invoice, index) => (
         <Card key={invoice.id} className={invoice.state === "superseded" ? "opacity-70" : ""}>
           <CardContent className="space-y-3 pt-5">
             <button
@@ -65,7 +67,7 @@ function InvoiceList({ isStaff }: { isStaff: boolean }) {
             >
               <div>
                 <p className="font-medium">
-                  {invoice.invoice_number} · v{invoice.version}
+                  <span className="list-number">{index + 1}.</span> {invoice.invoice_number} · v{invoice.version}
                 </p>
                 <p className="stat-label">
                   {invoice.kind === "proforma" ? "Proforma" : "Commercial"} ·{" "}
@@ -159,10 +161,10 @@ function InvoiceDetail({
         {formatMoney(Number(invoice.advance_amount), invoice.currency)}
       </p>
       <div className="space-y-1">
-        {lines.map((l) => (
+        {lines.map((l, index) => (
           <div key={l.id} className="flex justify-between gap-2 text-sm">
             <span>
-              {l.product_name} <span className="text-muted-foreground">· {l.quantity} × {formatMoney(Number(l.price), invoice.currency)}</span>
+              <span className="list-number">{index + 1}.</span> {l.product_name} <span className="text-muted-foreground">· {l.quantity} × {formatMoney(Number(l.price), invoice.currency)}</span>
             </span>
             <span className="font-medium">{formatMoney(Number(l.subtotal), invoice.currency)}</span>
           </div>

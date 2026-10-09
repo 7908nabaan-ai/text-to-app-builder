@@ -35,7 +35,7 @@ export function OrderActivity({ userId }: { userId: string }) {
     </section>
     <section className="bg-card p-4">
       <h2 className="mb-4 font-bold">Recent changes</h2>
-      {events.length === 0 ? <p className="text-xs text-muted-foreground">No recent changes</p> : <ol className="space-y-4">{events.map((event) => <li key={event.id} className="flex gap-3"><span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" /><div><p className="text-xs font-medium">{event.product_name || "Order"} · {event.event_type.replace(/_/g, " ")}</p><p className="mt-1 text-xs text-muted-foreground">{new Date(event.created_at).toLocaleDateString()}{event.new_quantity != null ? ` · ${event.new_quantity} cartons` : ""}</p></div></li>)}</ol>}
+      {events.length === 0 ? <p className="text-xs text-muted-foreground">No recent changes</p> : <ol className="space-y-4">{events.map((event, index) => <li key={event.id} className="flex gap-3"><span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" /><div><p className="text-xs font-medium"><span className="list-number">{index + 1}.</span> {event.product_name || "Order"} · {event.event_type.replace(/_/g, " ")}</p><p className="mt-1 text-xs text-muted-foreground">{new Date(event.created_at).toLocaleDateString()}{event.new_quantity != null ? ` · ${event.new_quantity} cartons` : ""}</p></div></li>)}</ol>}
     </section>
   </aside>;
 }

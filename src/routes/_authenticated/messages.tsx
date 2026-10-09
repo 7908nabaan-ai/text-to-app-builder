@@ -42,10 +42,10 @@ function Body({ userId, isStaff }: { userId: string; isStaff: boolean }) {
   return (
     <div className="grid gap-4 md:grid-cols-[240px_minmax(0,1fr)]">
       <ul className="space-y-1">
-        {orders.map((o) => (
+        {orders.map((o, index) => (
           <li key={o.id}>
             <button type="button" onClick={() => setSelected(o.id)} className={cn("w-full rounded-md border px-3 py-2 text-left text-sm", current === o.id ? "border-primary bg-card" : "border-transparent hover:bg-card")}>
-              <span className="font-semibold">{o.order_number}</span><span className="block text-xs text-muted-foreground">{STATUS_LABELS[o.status]}</span>
+              <span className="font-semibold"><span className="list-number">{index + 1}.</span> {o.order_number}</span><span className="block text-xs text-muted-foreground">{STATUS_LABELS[o.status]}</span>
             </button>
           </li>
         ))}

@@ -8,6 +8,8 @@ import { Card, CardContent } from "@/components/ui/card";
 export const Route = createFileRoute("/_authenticated/notifications")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "Notifications — Sky Plus" },
       { name: "description", content: "Updates about your orders, invoices and shipments." },
       { property: "og:title", content: "Notifications — Sky Plus" },
@@ -61,10 +63,10 @@ function NotificationList() {
           Mark all as read
         </Button>
       )}
-      {data.map((item) => (
+      {data.map((item, index) => (
         <Card key={item.id} className={item.is_read ? "opacity-70" : "border-accent"}>
           <CardContent className="pt-5">
-            <p className="font-medium">{item.title}</p>
+            <p className="font-medium"><span className="list-number">{index + 1}.</span> {item.title}</p>
             {item.body && <p className="mt-1 text-sm text-muted-foreground">{item.body}</p>}
             <p className="stat-label mt-2">{new Date(item.created_at).toLocaleString()}</p>
           </CardContent>

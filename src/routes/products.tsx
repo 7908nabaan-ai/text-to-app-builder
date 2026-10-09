@@ -119,10 +119,10 @@ function PublicCatalog() {
           <p className="mt-8 text-muted-foreground">No products to show yet.</p>
         ) : (
           <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
-            {shown.map((p) => (
+            {shown.map((p, index) => (
               <div key={p.id} className="flex min-w-0 flex-col rounded-md border border-border bg-card p-3">
                 <Badge variant="secondary" className="w-fit px-1.5 py-0 text-[10px]">{p.sku}</Badge>
-                <h2 className="mt-2 line-clamp-2 min-h-9 text-sm font-semibold">{p.name}</h2>
+                <h2 className="mt-2 line-clamp-2 min-h-9 text-sm font-semibold"><span className="list-number">{index + 1}.</span> {p.name}</h2>
                 {p.description && (
                   <p className="mt-1 line-clamp-2 text-[11px] text-muted-foreground">{p.description}</p>
                 )}

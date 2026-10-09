@@ -74,11 +74,11 @@ function Body() {
       {list.length === 0 ? <EmptyState title={`No ${g.label.toLowerCase()} orders`} /> : (
         <div className="overflow-x-auto rounded-md border border-border bg-card">
           <table className="w-full min-w-160 text-left text-xs">
-            <thead><tr><th>Order</th><th>Customer</th><th>Container</th><th>Cartons</th><th>CBM</th><th>Value</th><th>Status</th><th>Updated</th></tr></thead>
-            <tbody>{list.map((o) => {
+            <thead><tr><th scope="col">No.</th><th>Order</th><th>Customer</th><th>Container</th><th>Cartons</th><th>CBM</th><th>Value</th><th>Status</th><th>Updated</th></tr></thead>
+            <tbody>{list.map((o, index) => {
               const p = who.get(o.customer_id);
               return (
-                <tr key={o.id}>
+                <tr key={o.id}><td className="tabular-nums">{index + 1}</td>
                   <td><Link to="/staff/orders/$orderId" params={{ orderId: o.id }} className="font-semibold text-primary">{o.order_number}</Link></td>
                   <td>{p?.company_name || p?.contact_name || "Customer"}</td>
                   <td>{o.container_name}</td><td>{o.cartons}</td><td>{formatCbm(o.cbm)}</td><td className="font-semibold">{money(o.value)}</td>

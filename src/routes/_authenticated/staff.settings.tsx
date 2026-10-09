@@ -13,6 +13,8 @@ import { Card, CardContent } from "@/components/ui/card";
 export const Route = createFileRoute("/_authenticated/staff/settings")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "Company settings — Sky Plus" },
       { name: "description", content: "Company details, contact numbers and container types." },
       { property: "og:title", content: "Company settings — Sky Plus" },
@@ -199,9 +201,9 @@ function SettingsBody() {
         <CardContent className="space-y-4 pt-6">
           <div className="flex items-center justify-between"><p className="stat-label">Container settings</p><Button size="sm" variant="outline" onClick={() => addContainer.mutate()}>Add container</Button></div>
           <p className="text-sm text-muted-foreground">Changes apply to new orders only. Existing orders keep the limits they were created with.</p>
-          {containers.map((c) => (
+          {containers.map((c, index) => (
             <div key={c.id} className="grid gap-2 rounded-md border border-border p-3 sm:grid-cols-[2fr_1fr_1fr_1fr_auto] sm:items-end">
-              <div className="space-y-1"><Label htmlFor={`n-${c.id}`}>Container name</Label><Input id={`n-${c.id}`} defaultValue={c.name} onBlur={(e) => e.target.value.trim() && e.target.value !== c.name && updateContainer.mutate({ id: c.id, name: e.target.value.trim() })} /></div>
+              <div className="space-y-1"><Label htmlFor={`n-${c.id}`}>{index + 1}. Container name</Label><Input id={`n-${c.id}`} defaultValue={c.name} onBlur={(e) => e.target.value.trim() && e.target.value !== c.name && updateContainer.mutate({ id: c.id, name: e.target.value.trim() })} /></div>
               <div className="space-y-1"><Label htmlFor={`c-${c.id}`}>Max CBM</Label><Input id={`c-${c.id}`} type="number" step="0.01" defaultValue={c.capacity_cbm} onBlur={(e) => { const v = Number(e.target.value); if (v > 0 && v !== Number(c.capacity_cbm)) updateContainer.mutate({ id: c.id, capacity_cbm: v }); }} /></div>
               <div className="space-y-1"><Label htmlFor={`w-${c.id}`}>Max gross weight (kg)</Label><Input id={`w-${c.id}`} type="number" step="1" defaultValue={c.max_weight_kg} onBlur={(e) => { const v = Number(e.target.value); if (v >= 0 && v !== Number(c.max_weight_kg)) updateContainer.mutate({ id: c.id, max_weight_kg: v }); }} /></div>
               <div className="space-y-1"><Label htmlFor={`t-${c.id}`}>Warning at (%)</Label><Input id={`t-${c.id}`} type="number" step="1" defaultValue={c.warning_percent} onBlur={(e) => { const v = Number(e.target.value); if (v > 0 && v <= 100 && v !== Number(c.warning_percent)) updateContainer.mutate({ id: c.id, warning_percent: v }); }} /></div>

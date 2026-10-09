@@ -229,10 +229,10 @@ export function QuickOrder({ userId, orderId, onSelectOrder }: { userId: string;
             <Input className="h-10 pl-9" placeholder="Type a product name or SKU…" value={term} onChange={(e) => setTerm(e.target.value)} aria-label="Search products" />
             {matches.length > 0 && (
               <ul className="absolute z-20 mt-1 w-full overflow-hidden rounded-md border border-border bg-card shadow-lg">
-                {matches.map((p) => (
+                {matches.map((p, index) => (
                   <li key={p.id} className="flex items-center gap-3 border-b border-border px-3 py-2 last:border-0">
                     <ProductPhoto path={p.image_path} alt={p.name} className="h-10 w-10" />
-                    <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold">{p.name}</p><p className="text-xs text-muted-foreground">{p.sku} · {p.unit} · {formatCbm(Number(p.cbm_per_carton))} · {money(Number(p.default_price))}</p></div>
+                    <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold"><span className="list-number">{index + 1}.</span> {p.name}</p><p className="text-xs text-muted-foreground">{p.sku} · {p.unit} · {formatCbm(Number(p.cbm_per_carton))} · {money(Number(p.default_price))}</p></div>
                     <Button size="sm" disabled={add.isPending} onClick={() => add.mutate(p)}><Plus className="h-4 w-4" />Add{qtyBySku.get(p.sku) ? ` (${qtyBySku.get(p.sku)})` : ""}</Button>
                   </li>
                 ))}
@@ -258,7 +258,7 @@ export function QuickOrder({ userId, orderId, onSelectOrder }: { userId: string;
           )}
           {shown.length === 0 ? <p className="text-sm text-muted-foreground">{tab === "favourites" ? "Tap the heart on a product to save it here." : "Nothing here yet."}</p> : (
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-6">
-              {shown.map((p) => <ProductTile key={p.id} product={p} quantity={qtyBySku.get(p.sku)} adding={add.isPending} onAdd={() => add.mutate(p)} favourite={favs.ids.has(p.id)} onFavourite={() => favs.toggle(p.id)} />)}
+              {shown.map((p, index) => <ProductTile key={p.id} number={(tab === "all" ? page * PAGE : 0) + index + 1} product={p} quantity={qtyBySku.get(p.sku)} adding={add.isPending} onAdd={() => add.mutate(p)} favourite={favs.ids.has(p.id)} onFavourite={() => favs.toggle(p.id)} />)}
             </div>
           )}
           {tab === "all" && lists.all.length > PAGE && (

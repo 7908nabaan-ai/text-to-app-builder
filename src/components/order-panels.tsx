@@ -63,7 +63,7 @@ export function StatusTimeline({ order }: { order: { id: string; status: string 
             <span className={cn("flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px]", i < idx ? "border-success bg-success text-primary-foreground" : i === idx ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground")}>
               {i < idx ? <Check className="h-3 w-3" /> : i + 1}
             </span>
-            <span className={cn(i === idx ? "font-bold" : i > idx ? "text-muted-foreground" : "")}>{step}</span>
+            <span className={cn(i === idx ? "font-bold" : i > idx ? "text-muted-foreground" : "")}>{i + 1}. {step}</span>
           </li>
         ))}
       </ol>
@@ -97,13 +97,13 @@ export function NegotiationChat({ orderId, compact = false }: { orderId: string;
       <h2 className="mb-3 font-bold">Discussion with Sky Plus</h2>
       <div className={cn("space-y-2 overflow-y-auto pr-1", compact ? "max-h-64" : "max-h-96")}>
         {messages.length === 0 && <p className="text-xs text-muted-foreground">No messages yet. Ask about prices, quantities or delivery.</p>}
-        {messages.map((m) => {
+        {messages.map((m, index) => {
           const staff = m.sender_role === "staff";
           return (
             <div key={m.id} className={cn("flex gap-2", staff ? "justify-start" : "justify-end")}>
               {staff && <span className="mt-4 flex h-7 w-9 shrink-0 items-center justify-center text-[9px] font-black leading-none text-primary">SKY<br />PLUS</span>}
               <div className="max-w-[80%]">
-                <p className="mb-1 flex justify-between gap-4 text-[11px]"><span className="font-semibold">{staff ? "Sky Plus (Sales)" : "You"}</span><span className="text-muted-foreground">{new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span></p>
+                <p className="mb-1 flex justify-between gap-4 text-[11px]"><span className="font-semibold"><span className="list-number">{index + 1}.</span> {staff ? "Sky Plus (Sales)" : "You"}</span><span className="text-muted-foreground">{new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span></p>
                 <div className={cn("rounded-lg px-3 py-2 text-xs", staff ? "bg-primary/10" : "bg-success/15")}>
                   <p className="whitespace-pre-wrap">{m.body}</p>
                 </div>
@@ -133,12 +133,12 @@ export function RecentChanges({ orderId }: { orderId: string }) {
     <section className="rounded-md border border-border bg-card p-4">
       <h2 className="mb-3 font-bold">Recent Changes</h2>
       {events.length === 0 ? <p className="text-xs text-muted-foreground">No changes yet</p> : (
-        <ol className="space-y-3">{events.map((e) => (
+        <ol className="space-y-3">{events.map((e, index) => (
           <li key={e.id} className="flex gap-2">
             <span className="w-14 shrink-0 pt-0.5 text-[11px] text-muted-foreground">{new Date(e.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
             <span className={cn("mt-1.5 h-2 w-2 shrink-0 rounded-full", e.actor_role === "customer" ? "bg-success" : "bg-primary")} />
             <div className="min-w-0 text-xs">
-              <p className="font-medium">{e.actor_role === "customer" ? "You" : "Sky Plus"} · {e.event_type.replace(/_/g, " ")}{e.product_name ? ` · ${e.product_name}` : ""}</p>
+              <p className="font-medium"><span className="list-number">{index + 1}.</span> {e.actor_role === "customer" ? "You" : "Sky Plus"} · {e.event_type.replace(/_/g, " ")}{e.product_name ? ` · ${e.product_name}` : ""}</p>
               <p className="text-muted-foreground">{new Date(e.created_at).toLocaleString([], { dateStyle: "short", timeStyle: "short" })}{e.new_quantity != null ? ` · ${e.previous_quantity ?? 0} → ${e.new_quantity} ctn` : ""}{e.new_price != null && e.previous_price !== e.new_price ? ` · price ${e.previous_price} → ${e.new_price}` : ""}{e.new_status ? ` · ${e.new_status.replace(/_/g, " ")}` : ""}</p>
             </div>
           </li>
@@ -190,7 +190,7 @@ export function OrderHeaderCard({ order, statusLabel }: { order: { id: string; s
             <span className={cn("relative z-10 flex h-5 w-5 items-center justify-center rounded-full", i <= idx ? "bg-primary text-primary-foreground" : "bg-muted-foreground/40 text-primary-foreground")}>
               {i < idx ? <Check className="h-3 w-3" /> : <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground" />}
             </span>
-            <span className={cn("mt-1 text-[10px] leading-tight", i === idx ? "font-bold text-primary" : "text-muted-foreground")}>{step}</span>
+            <span className={cn("mt-1 text-[10px] leading-tight", i === idx ? "font-bold text-primary" : "text-muted-foreground")}>{i + 1}. {step}</span>
           </li>
         ))}
       </ol>

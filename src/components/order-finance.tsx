@@ -173,10 +173,10 @@ export function OrderFinance({ orderId, customerId, isStaff }: Props) {
 
         <div className="space-y-2">
           {invoices.length === 0 && <p className="text-sm text-muted-foreground">No invoices yet.</p>}
-          {invoices.map((inv) => (
+          {invoices.map((inv, index) => (
             <div key={inv.id} className={`flex items-center justify-between rounded-md border p-3 text-sm ${inv.state !== "current" ? "opacity-60" : ""}`}>
               <div>
-                <p className="font-medium">{inv.invoice_number} · v{inv.version}</p>
+                <p className="font-medium"><span className="list-number">{index + 1}.</span> {inv.invoice_number} · v{inv.version}</p>
                 <p className="stat-label">
                   {inv.kind === "proforma" ? "Proforma" : "Commercial"} · advance {formatMoney(Number(inv.advance_amount))}
                   {inv.kind === "commercial" && ` · freight ${formatMoney(Number(inv.freight_charges ?? 0))} · handling ${formatMoney(Number(inv.handling_charges ?? 0))}`}
@@ -241,10 +241,10 @@ export function OrderFinance({ orderId, customerId, isStaff }: Props) {
         <div className="space-y-2">
           <p className="text-sm font-medium">Payments</p>
           {payments.length === 0 && <p className="text-sm text-muted-foreground">No payments recorded.</p>}
-          {payments.map((p) => (
+          {payments.map((p, index) => (
             <div key={p.id} className={`flex items-center justify-between text-sm ${p.status !== "confirmed" ? "line-through opacity-60" : ""}`}>
               <span>
-                {new Date(p.paid_at).toLocaleDateString()} · {p.method ?? "—"}
+                <span className="list-number">{index + 1}.</span> {new Date(p.paid_at).toLocaleDateString()} · {p.method ?? "—"}
                 {p.reference ? ` · ${p.reference}` : ""}
               </span>
               <span className="flex items-center gap-2">

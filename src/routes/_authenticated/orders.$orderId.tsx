@@ -79,11 +79,11 @@ export function OrderDetail({ orderId, isStaff }: { orderId: string; isStaff: bo
           <p className="text-xs text-muted-foreground">Your original request, the Sky Plus proposal, your response and the final confirmed quantity — every step is kept.</p>
           <div className="overflow-x-auto rounded-md border border-border bg-card">
             <table className="w-full min-w-180 text-left text-xs">
-              <thead><tr><th>Product</th><th>Packing</th><th>Requested</th><th>Sky Plus proposal</th><th>Your response</th><th>Final</th><th>Weight</th><th>Price</th><th>Total</th><th>Status</th></tr></thead>
-              <tbody>{lines.map((l) => {
+              <thead><tr><th scope="col">No.</th><th>Product</th><th>Packing</th><th>Requested</th><th>Sky Plus proposal</th><th>Your response</th><th>Final</th><th>Weight</th><th>Price</th><th>Total</th><th>Status</th></tr></thead>
+              <tbody>{lines.map((l, index) => {
                 const qty = l.final_quantity ?? l.current_quantity;
                 return (
-                  <tr key={l.id}>
+                  <tr key={l.id}><td className="tabular-nums">{index + 1}</td>
                     <td><div className="flex items-center gap-2"><ProductPhoto path={l.image_path} alt={l.product_name} className="h-9 w-9" /><div><p className="font-semibold">{l.product_name}</p><p className="text-muted-foreground">{l.sku}</p></div></div></td>
                     <td>{l.unit}</td>
                     <td>{l.requested_quantity}</td>
