@@ -23,3 +23,11 @@
 - [x] Add Food / Non-Food main categories with departments and subcategories (per uploaded catalog structure)
 - [x] Show and copy the invitation link right after it is created
 - [x] Arrange catalogue items as compact tiles, 5 in a row
+- [ ] Customer portal: customer-only menu (Quick Order, Current Orders, Negotiation, Tracking, Payments, Favourites, Repeat)
+- [ ] New Order flow: pick container (20FT / 40FT / 40FT HC) before adding products
+- [ ] Quick Order single screen with instant search, add, qty change, remove
+- [ ] Always-visible live order panel (CBM, weight, cartons, USD + MYR); warn, never block when over limits
+- [ ] Customer Workspace for staff (list + per-customer tabs: overview, orders, shipments, invoices, payments, documents, timeline)
+- [ ] Orders grouped by status; invoices split Proforma/Commercial with status + View/PDF/Excel/Print
+- [ ] Configurable container settings (name, max CBM, max gross weight, warning levels); orders keep original values
+- [ ] Permission check: customers blocked from every staff page
