@@ -41,6 +41,9 @@ function AuthPage() {
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [username, setUsername] = useState("");
+  const [formError, setFormError] = useState<string | null>(null);
   const [contactName, setContactName] = useState("");
   const [company, setCompany] = useState("");
   const [phone, setPhone] = useState("");
@@ -104,6 +107,21 @@ function AuthPage() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    setFormError(null);
+    if (mode === "signup") {
+      if (inviteChecking || !invite?.valid) {
+        setFormError("Open a valid invitation link from Sky Plus to create your account.");
+        return;
+      }
+      if (username.trim().length < 3) {
+        setFormError("Username must contain at least 3 characters.");
+        return;
+      }
+      if (password !== confirmPassword) {
+        setFormError("Passwords do not match.");
+        return;
+      }
+    }
     setBusy(true);
     try {
       if (mode === "signin") {
@@ -112,15 +130,17 @@ function AuthPage() {
         navigate({ to: "/dashboard" });
       } else if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
-          email,
+          email: invite?.email ?? email,
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/auth`,
-            data: { contact_name: contactName, company_name: company, phone },
+            data: { username: username.trim(), contact_name: contactName.trim() || username.trim(), company_name: company, phone },
           },
         });
         if (error) throw error;
         toast.success("Account created. Check your email to confirm, then sign in.");
+        setPassword("");
+        setConfirmPassword("");
         setMode("signin");
       } else {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -210,8 +230,13 @@ function AuthPage() {
             </>
           )}
           <form onSubmit={handleSubmit} className="space-y-4">
+            {formError && <p role="alert" className="text-sm text-destructive">{formError}</p>}
             {mode === "signup" && (
               <>
+                <div className="space-y-1.5">
+                  <Label htmlFor="username">Username</Label>
+                  <Input id="username" autoComplete="username" value={username} onChange={(e) => setUsername(e.target.value)} className="h-11" minLength={3} maxLength={50} required />
+                </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="contact">Contact person</Label>
                   <Input
@@ -251,6 +276,7 @@ function AuthPage() {
                 type="email"
                 inputMode="email"
                 autoComplete="email"
+                readOnly={mode === "signup" && Boolean(invite?.valid)}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="h-11"
@@ -272,7 +298,14 @@ function AuthPage() {
                 />
               </div>
             )}
-            <Button type="submit" variant="outline" className="h-11 w-full" disabled={busy}>
+            {mode === "signup" && (
+              <div className="space-y-1.5">
+                <Label htmlFor="confirm-password">Confirm password</Label>
+                <Input id="confirm-password" type="password" autoComplete="new-password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="h-11" minLength={6} required />
+                <p className="text-xs text-muted-foreground">Use your email and password to sign in after confirming your email.</p>
+              </div>
+            )}
+            <Button type="submit" variant="outline" className="h-11 w-full" disabled={busy || inviteChecking}>
               {mode === "signin" ? "Sign in" : mode === "signup" ? "Create account" : "Send link"}
             </Button>
           </form>
@@ -280,22 +313,32 @@ function AuthPage() {
           <div className="space-y-2 text-center text-sm text-muted-foreground">
             {mode === "signin" && (
               <>
-                <button type="button" className="underline" onClick={() => setMode("reset")}>
+                <Button type="button" variant="link" onClick={() => { setFormError(null); setMode("reset"); }}>
                   Forgot your password?
-                </button>
+                </Button>
+                <Button type="button" variant="link" className="w-full" disabled={inviteChecking} onClick={() => {
+                  if (!invite?.valid) {
+                    setFormError("Open your invitation link from Sky Plus to create an account. Contact the administrator if you need one.");
+                    return;
+                  }
+                  setFormError(null);
+                  setPassword("");
+                  setConfirmPassword("");
+                  setMode("signup");
+                }}>Create account</Button>
                 <p>New customers can only join with an invitation link from Sky Plus.</p>
                 <Link to="/contact" className="block underline">Contact administrator</Link>
               </>
             )}
 
             {mode !== "signin" && (
-              <button
+              <Button
                 type="button"
-                className="font-medium text-primary underline"
-                onClick={() => setMode("signin")}
+                variant="link"
+                onClick={() => { setFormError(null); setPassword(""); setConfirmPassword(""); setMode("signin"); }}
               >
                 Back to sign in
-              </button>
+              </Button>
             )}
           </div>
         </CardContent>
