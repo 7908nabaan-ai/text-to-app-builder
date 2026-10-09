@@ -9,7 +9,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { calcBalance, formatMoney } from "@/lib/calc";
 
-type Props = { orderId: string; customerId: string; isStaff: boolean };
+type Props = { orderId: string; customerId: string; isStaff: boolean; orderStatus?: string };
+
+const INVOICEABLE_STATUSES = ["confirmed", "loading", "shipped", "completed"];
 
 export function useOrderFinance(orderId: string) {
   const invoices = useQuery({
@@ -39,7 +41,8 @@ export function useOrderFinance(orderId: string) {
   return { invoices: invoices.data ?? [], payments: payments.data ?? [] };
 }
 
-export function OrderFinance({ orderId, customerId, isStaff }: Props) {
+export function OrderFinance({ orderId, customerId, isStaff, orderStatus }: Props) {
+  const canIssue = !orderStatus || INVOICEABLE_STATUSES.includes(orderStatus);
   const qc = useQueryClient();
   const { invoices, payments } = useOrderFinance(orderId);
   const [advanceMode, setAdvanceMode] = useState<"percent" | "amount">("percent");
@@ -190,7 +193,7 @@ export function OrderFinance({ orderId, customerId, isStaff }: Props) {
           ))}
         </div>
 
-        {isStaff && (
+        {isStaff && canIssue && (
           <div className="space-y-3 rounded-md border border-dashed p-3">
             <p className="text-sm font-medium">Issue invoice</p>
             <div className="flex flex-wrap items-end gap-2">
