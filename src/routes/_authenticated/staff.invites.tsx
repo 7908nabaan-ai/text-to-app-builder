@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Copy, Send } from "lucide-react";
+import { Copy, Link2, Send, X } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/staff/invites")({
   head: () => ({
@@ -47,6 +47,103 @@ function inviteUrl(token: string) {
   return `${window.location.origin}/auth?invite=${token}`;
 }
 
+/** Copy to clipboard with a fallback for browsers/previews that block the clipboard API. */
+async function copyText(value: string) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(value);
+      return true;
+    }
+  } catch {
+    // fall through to the manual selection path
+  }
+  try {
+    const area = document.createElement("textarea");
+    area.value = value;
+    area.setAttribute("readonly", "");
+    area.style.position = "fixed";
+    area.style.top = "-1000px";
+    document.body.appendChild(area);
+    area.select();
+    const ok = document.execCommand("copy");
+    document.body.removeChild(area);
+    return ok;
+  } catch {
+    return false;
+  }
+}
+
+function CopyLinkButton({ url, label = "Copy link" }: { url: string; label?: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={async () => {
+        const ok = await copyText(url);
+        if (ok) {
+          setCopied(true);
+          toast.success("Link copied");
+          window.setTimeout(() => setCopied(false), 1800);
+        } else {
+          toast.error("Could not copy automatically — select the link and copy it manually.");
+        }
+      }}
+    >
+      <Copy className="mr-2 h-4 w-4" /> {copied ? "Copied" : label}
+    </Button>
+  );
+}
+
+function InvitationReady({
+  email,
+  url,
+  onDismiss,
+}: {
+  email: string;
+  url: string;
+  onDismiss: () => void;
+}) {
+  return (
+    <Card className="mb-5 border-gold">
+      <CardContent className="space-y-3 pt-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="flex items-center gap-2 font-medium">
+              <Link2 className="h-4 w-4 shrink-0 text-gold" /> Invitation ready to send
+            </p>
+            <p className="truncate text-sm text-muted-foreground">{email}</p>
+          </div>
+          <Button variant="ghost" size="sm" onClick={onDismiss} aria-label="Hide invitation link">
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Input
+            readOnly
+            value={url}
+            aria-label="Invitation link"
+            className="min-w-0 font-mono text-xs"
+            onFocus={(e) => e.target.select()}
+          />
+          <div className="flex shrink-0 gap-2">
+            <Button className="h-11 w-full sm:w-auto" asChild>
+              <a href={url} target="_blank" rel="noreferrer">
+                Open
+              </a>
+            </Button>
+            <CopyLinkButton url={url} label="Copy link" />
+          </div>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Send this link by WhatsApp or email. It opens the sign-up page with the email filled in,
+          works once, and expires in 14 days.
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
+
 function InvitesPage() {
   const { isStaff } = useAuth();
   const queryClient = useQueryClient();
@@ -54,6 +151,7 @@ function InvitesPage() {
   const [contactName, setContactName] = useState("");
   const [company, setCompany] = useState("");
   const [role, setRole] = useState<"customer" | "admin" | "owner">("customer");
+  const [lastInvite, setLastInvite] = useState<{ email: string; url: string } | null>(null);
 
   const { data: invites = [], isLoading } = useQuery({
     queryKey: ["invites"],
@@ -82,15 +180,20 @@ function InvitesPage() {
         .select("token")
         .single();
       if (error) throw error;
-      return data.token as string;
+      return { email: email.trim().toLowerCase(), url: inviteUrl(data.token as string) };
     },
-    onSuccess: async (token) => {
+    onSuccess: async (invite) => {
       setEmail("");
       setContactName("");
       setCompany("");
       await queryClient.invalidateQueries({ queryKey: ["invites"] });
-      await navigator.clipboard.writeText(inviteUrl(token)).catch(() => undefined);
-      toast.success("Invitation created — link copied. Send it to your customer.");
+      setLastInvite(invite);
+      const copied = await copyText(invite.url);
+      toast.success(
+        copied
+          ? "Invitation created — link copied. Send it to your customer."
+          : "Invitation created — press Copy link to copy it.",
+      );
     },
     onError: (error) => toast.error(error instanceof Error ? error.message : "Could not create"),
   });
@@ -191,6 +294,14 @@ function InvitesPage() {
             </CardContent>
           </Card>
 
+          {lastInvite && (
+            <InvitationReady
+              email={lastInvite.email}
+              url={lastInvite.url}
+              onDismiss={() => setLastInvite(null)}
+            />
+          )}
+
           {isLoading ? null : invites.length === 0 ? (
             <EmptyState
               title="No invitations yet"
@@ -212,27 +323,16 @@ function InvitesPage() {
                       </div>
                       <Badge variant="outline" className="capitalize">{invite.role}</Badge>
                       <Badge variant={status.variant}>{status.label}</Badge>
+                      <CopyLinkButton url={inviteUrl(invite.token)} />
                       {open && (
-                        <>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              void navigator.clipboard.writeText(inviteUrl(invite.token));
-                              toast.success("Link copied");
-                            }}
-                          >
-                            <Copy className="mr-2 h-4 w-4" /> Copy link
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => revoke.mutate(invite.id)}
-                            disabled={revoke.isPending}
-                          >
-                            Cancel
-                          </Button>
-                        </>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => revoke.mutate(invite.id)}
+                          disabled={revoke.isPending}
+                        >
+                          Cancel
+                        </Button>
                       )}
                     </CardContent>
                   </Card>
