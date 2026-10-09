@@ -448,7 +448,7 @@ function AddItem({ orderId, lines, onAdded }: { orderId: string; lines: OrderLin
       const safe = search.replace(/[%,()]/g, " ");
       const { data, error } = await supabase
         .from("products")
-        .select("id, sku, name, unit, default_price")
+        .select("id, sku, name, unit, default_price, cbm_per_carton, gross_weight_kg, image_path, categories(name)")
         .eq("is_active", true)
         .or(`name.ilike.%${safe}%,sku.ilike.%${safe}%`)
         .order("name")
@@ -458,7 +458,7 @@ function AddItem({ orderId, lines, onAdded }: { orderId: string; lines: OrderLin
     },
   });
   const add = useMutation({
-    mutationFn: async (product: { id: string; sku: string; name: string }) => {
+    mutationFn: async (product: (typeof results)[number]) => {
       const quantity = Math.max(1, Math.floor(qty) || 1);
       const existing = lines.find((l) => l.sku === product.sku);
       if (existing) {
@@ -470,7 +470,9 @@ function AddItem({ orderId, lines, onAdded }: { orderId: string; lines: OrderLin
       }
       const { error } = await supabase.from("order_lines").insert({
         order_id: orderId, product_id: product.id, sku: product.sku, product_name: product.name,
-        unit: "", cbm_per_carton: 0, catalog_price: 0, negotiated_price: 0,
+        unit: product.unit, cbm_per_carton: Number(product.cbm_per_carton), gross_weight_kg: Number(product.gross_weight_kg ?? 0),
+        image_path: product.image_path, category_name: (product.categories as { name: string } | null)?.name ?? null,
+        catalog_price: Number(product.default_price), negotiated_price: Number(product.default_price),
         requested_quantity: 0, proposed_quantity: quantity, current_quantity: quantity,
       });
       if (error) throw error;
