@@ -31,3 +31,6 @@
 - [ ] Orders grouped by status; invoices split Proforma/Commercial with status + View/PDF/Excel/Print
 - [ ] Configurable container settings (name, max CBM, max gross weight, warning levels); orders keep original values
 - [ ] Permission check: customers blocked from every staff page
+- [ ] History module (read-only): customers → completed orders, shipments, PI, CI, payments; completed order detail
+- [ ] Reports module: customers, products, orders, shipments, invoices, payments, containers, sales; date range + country; PDF/Excel/Print
+- [ ] Owner dashboard: orders, negotiations, outstanding, shipments, sales, customers, container utilization, quick actions
