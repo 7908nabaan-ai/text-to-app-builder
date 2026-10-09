@@ -1,4 +1,7 @@
 # Sky Plus roadmap
+- [ ] Keep order-list column headers visible while scrolling
+
+- [ ] Enforce customer acceptance of negotiated terms followed by Sky Plus final approval; verify approval safeguards and controls
 
 - [x] Show each customer item immediately above its Sky Plus proposal in staff review and customer order details; preserved calculations and editing behavior; verified four paired items on both pages in signed-in preview
 

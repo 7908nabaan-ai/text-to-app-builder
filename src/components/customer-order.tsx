@@ -12,6 +12,7 @@ import { calcOrderTotals, formatCbm, formatMoney } from "@/lib/calc";
 import { ACTIVE_STATUSES, STATUS_LABELS, logOrderEvent, type OrderLine } from "@/lib/orders";
 import { ProductPhoto } from "@/components/product-photo";
 import { ContactButtons } from "@/components/contact-buttons";
+import { CustomerApproval } from "@/components/customer-approval";
 
 export function CustomerOrder({ userId }: { userId: string }) {
   const navigate = useNavigate();
@@ -88,7 +89,7 @@ export function CustomerOrder({ userId }: { userId: string }) {
       if (!order) return;
       const { error } = await supabase
         .from("orders")
-        .update({ status: "submitted" })
+        .update({ status: order.status === "draft" ? "submitted" : "customer_updated" })
         .eq("id", order.id);
       if (error) throw error;
       await logOrderEvent({
@@ -96,7 +97,7 @@ export function CustomerOrder({ userId }: { userId: string }) {
         event_type: "status_changed",
         actor_role: "customer",
         previous_status: order.status,
-        new_status: "submitted",
+        new_status: order.status === "draft" ? "submitted" : "customer_updated",
       });
     },
     onSuccess: () => {
@@ -170,9 +171,9 @@ export function CustomerOrder({ userId }: { userId: string }) {
       {lines.length === 0 ? (
         <EmptyState title="Your order is empty" description="Add products from the catalog." />
       ) : (
-        <div className="overflow-x-auto rounded-md border border-border bg-card">
+        <div className="max-h-[65vh] overflow-auto rounded-md border border-border bg-card">
           <table className="w-full min-w-160 text-left text-xs">
-            <thead><tr><th scope="col">No.</th><th>Product</th><th>Packing</th><th>Qty / CTN</th><th>CBM / CTN</th><th>Total CBM</th><th>Unit price</th><th>Total</th><th>Status</th><th /></tr></thead>
+            <thead className="sticky top-0 z-10 bg-card"><tr><th scope="col">No.</th><th>Product</th><th>Packing</th><th>Qty / CTN</th><th>CBM / CTN</th><th>Total CBM</th><th>Unit price</th><th>Total</th><th>Status</th><th /></tr></thead>
             <tbody>{lines.map((line, index) => {
               const quantity = line.final_quantity ?? line.current_quantity;
               return <tr key={line.id}><td className="tabular-nums">{index + 1}</td>
@@ -203,6 +204,7 @@ export function CustomerOrder({ userId }: { userId: string }) {
       </div>
 
       <ContactButtons message={`Hello Sky Plus, about order ${order.order_number}`} />
+      <CustomerApproval order={order} disabled={lines.length === 0 || setQuantity.isPending || submitOrder.isPending} />
     </div>
   );
 }

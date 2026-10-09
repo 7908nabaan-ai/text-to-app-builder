@@ -71,6 +71,13 @@
       "when": 1791508646038,
       "tag": "0009_order_chat_availability",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791512575826,
+      "tag": "0010_negotiation_customer_then_skyplus_approval",
+      "breakpoints": true
     }
   ]
 }

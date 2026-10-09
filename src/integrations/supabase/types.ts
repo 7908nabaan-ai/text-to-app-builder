@@ -599,6 +599,8 @@ export type Database = {
           container_type_id: string
           container_warning_percent: number | null
           created_at: string
+          customer_approved_at: string | null
+          customer_approved_by: string | null
           customer_id: string
           finalized_at: string | null
           id: string
@@ -618,6 +620,8 @@ export type Database = {
           container_type_id: string
           container_warning_percent?: number | null
           created_at?: string
+          customer_approved_at?: string | null
+          customer_approved_by?: string | null
           customer_id: string
           finalized_at?: string | null
           id?: string
@@ -637,6 +641,8 @@ export type Database = {
           container_type_id?: string
           container_warning_percent?: number | null
           created_at?: string
+          customer_approved_at?: string | null
+          customer_approved_by?: string | null
           customer_id?: string
           finalized_at?: string | null
           id?: string
