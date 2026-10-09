@@ -301,6 +301,7 @@ export function QuickOrder({ userId, orderId, onSelectOrder }: { userId: string;
                     <td className="text-center"><Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => setQty.mutate({ line: l, quantity: 0 })} aria-label={`Remove ${l.product_name}`}><Trash2 /></Button></td>
                   </tr>
                 ); })}</tbody>
+                <tfoot className="sticky bottom-0 z-10 bg-card"><tr><td colSpan={3} className="font-semibold">Order totals</td><td className="text-center font-bold">{load.totalCartons}</td><td /><td className="font-bold">{load.totalCbm.toFixed(2)}</td><td /><td className="text-right font-bold">{money(load.totalValue)}</td><td colSpan={2} /></tr></tfoot>
               </table>
             </div>
           )}
