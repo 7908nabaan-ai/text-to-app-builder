@@ -34,3 +34,7 @@
 - [ ] History module (read-only): customers → completed orders, shipments, PI, CI, payments; completed order detail
 - [ ] Reports module: customers, products, orders, shipments, invoices, payments, containers, sales; date range + country; PDF/Excel/Print
 - [ ] Owner dashboard: orders, negotiations, outstanding, shipments, sales, customers, container utilization, quick actions
+- [ ] USD/MYR display switch (display only, never changes stored prices)
+- [ ] Negotiation timeline: request → Sky Plus proposal → customer response → final
+- [ ] Favourite products, recently / frequently ordered in Quick Order
+- [ ] Larger product images with packing, CBM, weight, USD + MYR price
