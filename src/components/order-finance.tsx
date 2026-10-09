@@ -298,3 +298,12 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     </div>
   );
 }
+
+function Row({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
+  return (
+    <div className={`flex justify-between ${strong ? "font-semibold" : ""}`}>
+      <span>{label}</span>
+      <span>{value}</span>
+    </div>
+  );
+}

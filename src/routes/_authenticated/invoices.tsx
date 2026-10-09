@@ -91,7 +91,7 @@ function InvoiceDetail({
   invoice,
   isStaff,
 }: {
-  invoice: { id: string; order_id: string; customer_id: string; currency: string; total_cbm: number; container_code: string | null; advance_amount: number; payment_instructions: string | null; invoice_number: string; version: number; kind: string; issue_date: string; total_value: number; state: string };
+  invoice: { id: string; order_id: string; customer_id: string; currency: string; total_cbm: number; container_code: string | null; advance_amount: number; payment_instructions: string | null; invoice_number: string; version: number; kind: string; issue_date: string; total_value: number; state: string; product_value?: number | null; freight_charges?: number; handling_charges?: number };
   isStaff: boolean;
 }) {
   const { data: lines = [] } = useQuery({
@@ -102,6 +102,27 @@ function InvoiceDetail({
       return data;
     },
   });
+  const isCI = invoice.kind === "commercial";
+  const summary = (paid: number): [string, number][] => {
+    const total = Number(invoice.total_value);
+    const rows: [string, number][] = [["Final product subtotal", Number(invoice.product_value ?? total)]];
+    if (isCI) rows.push(["Freight charges", Number(invoice.freight_charges ?? 0)], ["Handling charges", Number(invoice.handling_charges ?? 0)]);
+    rows.push([isCI ? "Total commercial invoice value" : "Total value", total], ["Advance", Number(invoice.advance_amount)], ["Payments received", paid], ["Balance due", Math.max(0, total - paid)]);
+    if (paid > total) rows.push(["Overpayment / credit", paid - total]);
+    return rows;
+  };
+  const getPaid = async () => {
+    const { data: pays } = await supabase.from("payments").select("amount, status").eq("order_id", invoice.order_id);
+    return (pays ?? []).filter((p) => p.status === "confirmed").reduce((s, p) => s + Number(p.amount), 0);
+  };
+  const exportExcel = async () => {
+    const paid = await getPaid();
+    downloadExcel(`${invoice.invoice_number}-v${invoice.version}.xlsx`, [{
+      title: "Invoice",
+      head: ["Code", "Product", "Unit", "Qty", "Price", "CBM", "Subtotal"],
+      rows: lines.map((l) => [l.sku, l.product_name, l.unit, l.quantity, Number(l.price), Number(l.total_cbm), Number(l.subtotal)]),
+    }, { title: "Summary", head: ["Item", "Amount"], rows: summary(paid) }]);
+  };
   const exportPdf = async () => {
     const { data: pays } = await supabase.from("payments").select("amount, status").eq("order_id", invoice.order_id);
     const paid = (pays ?? []).filter((p) => p.status === "confirmed").reduce((s, p) => s + Number(p.amount), 0);
@@ -118,8 +139,8 @@ function InvoiceDetail({
         rows: lines.map((l) => [l.sku, l.product_name, l.quantity, m(Number(l.price)), Number(l.total_cbm).toFixed(3), m(Number(l.subtotal))]),
       }, {
         title: "Summary",
-        head: ["Total value", "Advance", "Paid", "Balance due"],
-        rows: [[m(Number(invoice.total_value)), m(Number(invoice.advance_amount)), m(paid), m(Number(invoice.total_value) - paid)]],
+        head: ["Item", "Amount"],
+        rows: summary(paid).map(([k, v]) => [k, m(v)]),
       }],
       footer: invoice.payment_instructions ? ["Payment instructions:", invoice.payment_instructions] : [],
     });
@@ -128,11 +149,7 @@ function InvoiceDetail({
     <div className="space-y-3 border-t pt-3">
       <div className="flex gap-2">
         <Button size="sm" variant="outline" onClick={() => void exportPdf()}>Download PDF</Button>
-        <Button size="sm" variant="outline" onClick={() => downloadExcel(`${invoice.invoice_number}-v${invoice.version}.xlsx`, [{
-          title: "Invoice",
-          head: ["Code", "Product", "Unit", "Qty", "Price", "CBM", "Subtotal"],
-          rows: lines.map((l) => [l.sku, l.product_name, l.unit, l.quantity, Number(l.price), Number(l.total_cbm), Number(l.subtotal)]),
-        }])}>Download Excel</Button>
+        <Button size="sm" variant="outline" onClick={() => void exportExcel()}>Download Excel</Button>
       </div>
       <p className="text-sm text-muted-foreground">
         {invoice.container_code ?? "Container"} · {formatCbm(Number(invoice.total_cbm))} · advance{" "}
