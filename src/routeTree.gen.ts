@@ -23,6 +23,8 @@ import { Route as AuthenticatedInvoicesRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
+import { Route as AuthenticatedOrdersIndexRouteImport } from './routes/_authenticated/orders.index'
+import { Route as AuthenticatedOrdersOrderIdRouteImport } from './routes/_authenticated/orders.$orderId'
 import { Route as AuthenticatedStaffCategoriesRouteImport } from './routes/_authenticated/staff.categories'
 import { Route as AuthenticatedStaffCustomersRouteImport } from './routes/_authenticated/staff.customers'
 import { Route as AuthenticatedStaffImportRouteImport } from './routes/_authenticated/staff.import'
@@ -101,6 +103,18 @@ const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
   path: '/reports',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedOrdersIndexRoute =
+  AuthenticatedOrdersIndexRouteImport.update({
+    id: '/orders/',
+    path: '/orders/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedOrdersOrderIdRoute =
+  AuthenticatedOrdersOrderIdRouteImport.update({
+    id: '/orders/$orderId',
+    path: '/orders/$orderId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedStaffCategoriesRoute =
   AuthenticatedStaffCategoriesRouteImport.update({
     id: '/staff/categories',
@@ -158,12 +172,14 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/reports': typeof AuthenticatedReportsRoute
+  '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
   '/staff/categories': typeof AuthenticatedStaffCategoriesRoute
   '/staff/customers': typeof AuthenticatedStaffCustomersRoute
   '/staff/import': typeof AuthenticatedStaffImportRoute
   '/staff/invites': typeof AuthenticatedStaffInvitesRoute
   '/staff/products': typeof AuthenticatedStaffProductsRoute
   '/staff/settings': typeof AuthenticatedStaffSettingsRoute
+  '/orders/': typeof AuthenticatedOrdersIndexRoute
   '/staff/orders/$orderId': typeof AuthenticatedStaffOrdersOrderIdRoute
 }
 export interface FileRoutesByTo {
@@ -180,12 +196,14 @@ export interface FileRoutesByTo {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/reports': typeof AuthenticatedReportsRoute
+  '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
   '/staff/categories': typeof AuthenticatedStaffCategoriesRoute
   '/staff/customers': typeof AuthenticatedStaffCustomersRoute
   '/staff/import': typeof AuthenticatedStaffImportRoute
   '/staff/invites': typeof AuthenticatedStaffInvitesRoute
   '/staff/products': typeof AuthenticatedStaffProductsRoute
   '/staff/settings': typeof AuthenticatedStaffSettingsRoute
+  '/orders': typeof AuthenticatedOrdersIndexRoute
   '/staff/orders/$orderId': typeof AuthenticatedStaffOrdersOrderIdRoute
 }
 export interface FileRoutesById {
@@ -204,12 +222,14 @@ export interface FileRoutesById {
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
+  '/_authenticated/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
   '/_authenticated/staff/categories': typeof AuthenticatedStaffCategoriesRoute
   '/_authenticated/staff/customers': typeof AuthenticatedStaffCustomersRoute
   '/_authenticated/staff/import': typeof AuthenticatedStaffImportRoute
   '/_authenticated/staff/invites': typeof AuthenticatedStaffInvitesRoute
   '/_authenticated/staff/products': typeof AuthenticatedStaffProductsRoute
   '/_authenticated/staff/settings': typeof AuthenticatedStaffSettingsRoute
+  '/_authenticated/orders/': typeof AuthenticatedOrdersIndexRoute
   '/_authenticated/staff/orders/$orderId': typeof AuthenticatedStaffOrdersOrderIdRoute
 }
 export interface FileRouteTypes {
@@ -228,12 +248,14 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/profile'
     | '/reports'
+    | '/orders/$orderId'
     | '/staff/categories'
     | '/staff/customers'
     | '/staff/import'
     | '/staff/invites'
     | '/staff/products'
     | '/staff/settings'
+    | '/orders/'
     | '/staff/orders/$orderId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -250,12 +272,14 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/profile'
     | '/reports'
+    | '/orders/$orderId'
     | '/staff/categories'
     | '/staff/customers'
     | '/staff/import'
     | '/staff/invites'
     | '/staff/products'
     | '/staff/settings'
+    | '/orders'
     | '/staff/orders/$orderId'
   id:
     | '__root__'
@@ -273,12 +297,14 @@ export interface FileRouteTypes {
     | '/_authenticated/notifications'
     | '/_authenticated/profile'
     | '/_authenticated/reports'
+    | '/_authenticated/orders/$orderId'
     | '/_authenticated/staff/categories'
     | '/_authenticated/staff/customers'
     | '/_authenticated/staff/import'
     | '/_authenticated/staff/invites'
     | '/_authenticated/staff/products'
     | '/_authenticated/staff/settings'
+    | '/_authenticated/orders/'
     | '/_authenticated/staff/orders/$orderId'
   fileRoutesById: FileRoutesById
 }
@@ -392,6 +418,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReportsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/orders/': {
+      id: '/_authenticated/orders/'
+      path: '/orders'
+      fullPath: '/orders/'
+      preLoaderRoute: typeof AuthenticatedOrdersIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/orders/$orderId': {
+      id: '/_authenticated/orders/$orderId'
+      path: '/orders/$orderId'
+      fullPath: '/orders/$orderId'
+      preLoaderRoute: typeof AuthenticatedOrdersOrderIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/staff/categories': {
       id: '/_authenticated/staff/categories'
       path: '/staff/categories'
@@ -452,12 +492,14 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
+  AuthenticatedOrdersOrderIdRoute: typeof AuthenticatedOrdersOrderIdRoute
   AuthenticatedStaffCategoriesRoute: typeof AuthenticatedStaffCategoriesRoute
   AuthenticatedStaffCustomersRoute: typeof AuthenticatedStaffCustomersRoute
   AuthenticatedStaffImportRoute: typeof AuthenticatedStaffImportRoute
   AuthenticatedStaffInvitesRoute: typeof AuthenticatedStaffInvitesRoute
   AuthenticatedStaffProductsRoute: typeof AuthenticatedStaffProductsRoute
   AuthenticatedStaffSettingsRoute: typeof AuthenticatedStaffSettingsRoute
+  AuthenticatedOrdersIndexRoute: typeof AuthenticatedOrdersIndexRoute
   AuthenticatedStaffOrdersOrderIdRoute: typeof AuthenticatedStaffOrdersOrderIdRoute
 }
 
@@ -469,12 +511,14 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
+  AuthenticatedOrdersOrderIdRoute: AuthenticatedOrdersOrderIdRoute,
   AuthenticatedStaffCategoriesRoute: AuthenticatedStaffCategoriesRoute,
   AuthenticatedStaffCustomersRoute: AuthenticatedStaffCustomersRoute,
   AuthenticatedStaffImportRoute: AuthenticatedStaffImportRoute,
   AuthenticatedStaffInvitesRoute: AuthenticatedStaffInvitesRoute,
   AuthenticatedStaffProductsRoute: AuthenticatedStaffProductsRoute,
   AuthenticatedStaffSettingsRoute: AuthenticatedStaffSettingsRoute,
+  AuthenticatedOrdersIndexRoute: AuthenticatedOrdersIndexRoute,
   AuthenticatedStaffOrdersOrderIdRoute: AuthenticatedStaffOrdersOrderIdRoute,
 }
 
