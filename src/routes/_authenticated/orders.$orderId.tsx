@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ProductPhoto } from "@/components/product-photo";
 import { LiveOrderPanel } from "@/components/ordering";
-import { LineStatus, NegotiationChat, RecentChanges, StatusTimeline } from "@/components/order-panels";
+import { BottomTotals, LineStatus, NegotiationChat, RecentChanges, StatusTimeline } from "@/components/order-panels";
 import { OrderFinance } from "@/components/order-finance";
 import { CustomerApproval } from "@/components/customer-approval";
 import { useCurrency } from "@/lib/currency";
@@ -114,6 +114,7 @@ export function OrderDetail({ orderId, isStaff }: { orderId: string; isStaff: bo
               })}</tbody>
             </table>
           </div>
+          <BottomTotals order={order} lines={lines} />
         </section>
 
         <OrderFinance orderId={order.id} customerId={order.customer_id} isStaff={isStaff} />

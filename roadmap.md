@@ -1,4 +1,5 @@
 # Sky Plus roadmap
+- [x] Keep order cross totals visible beneath scrolling items on customer and admin sides; both detail pages browser verified, calculation tests pass.
 - [x] Keep order-list column headers visible while scrolling; browser verified fixed header position during internal scrolling
 
 - [x] Enforce customer acceptance followed by Sky Plus final approval; database safeguards installed, staff confirmation gating checked in browser, calculation tests pass (live customer acceptance not exercised)

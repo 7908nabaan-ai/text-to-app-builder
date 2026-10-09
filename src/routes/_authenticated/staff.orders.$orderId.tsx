@@ -13,7 +13,7 @@ import { calcOrderTotals, formatCbm, formatMoney } from "@/lib/calc";
 import { STATUS_LABELS, logOrderEvent, type OrderLine } from "@/lib/orders";
 import { OrderFinance } from "@/components/order-finance";
 import { LiveOrderPanel } from "@/components/ordering";
-import { LineStatus, NegotiationChat } from "@/components/order-panels";
+import { BottomTotals, LineStatus, NegotiationChat } from "@/components/order-panels";
 import { useContainerTypes } from "@/components/quick-order";
 
 export const Route = createFileRoute("/_authenticated/staff/orders/$orderId")({
@@ -310,6 +310,8 @@ function OrderBody({ orderId, isOwner }: { orderId: string; isOwner: boolean }) 
         );
       })()}
 
+      <section aria-label="Order items and totals" className="space-y-2">
+      <div className="max-h-[65vh] space-y-3 overflow-auto">
       {lines.map((line, index) => (
         <Card key={line.id}>
           <CardContent className="p-0">
@@ -378,6 +380,9 @@ function OrderBody({ orderId, isOwner }: { orderId: string; isOwner: boolean }) 
           </CardContent>
         </Card>
       ))}
+      </div>
+      <BottomTotals order={order} lines={lines} />
+      </section>
 
       <OrderFinance orderId={orderId} customerId={order.customer_id} isStaff />
 
