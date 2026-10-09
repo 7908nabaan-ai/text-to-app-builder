@@ -43,6 +43,13 @@
       "when": 1791504313345,
       "tag": "0005_invoice_freight_handling",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791504334916,
+      "tag": "0006_lock_issued_invoice_amounts",
+      "breakpoints": true
     }
   ]
 }
