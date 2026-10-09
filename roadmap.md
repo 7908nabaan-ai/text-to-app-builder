@@ -1,5 +1,7 @@
 # Sky Plus roadmap
 
+- [ ] Number displayed business lists and verify numbering without changing actions
+
 - [x] Promote skynaeem1010@gmail.com to staff role
 - [x] Invite-only signup: staff create invite links; sign-up blocked without a valid invite
 - [x] Invoice generation + versioning (PI/CI)
