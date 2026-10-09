@@ -148,6 +148,9 @@ function CustomersBody() {
                   )}
 
                   <div className="flex flex-wrap gap-2">
+                    <Button asChild size="sm">
+                      <Link to="/staff/customers/$customerId" params={{ customerId: customer.id }}>Open workspace</Link>
+                    </Button>
                     {whatsappLink(customer.phone) && (
                       <Button asChild size="sm" variant="outline">
                         <a
