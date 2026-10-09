@@ -1,5 +1,7 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { EmptyState, Page } from "@/components/page";
@@ -180,6 +182,22 @@ function OrderBody({ orderId, isOwner }: { orderId: string; isOwner: boolean }) 
     onError: (error: Error) => toast.error(error.message),
   });
 
+  const editableLines = !order?.is_locked && !["confirmed", "loading", "shipped", "completed"].includes(order?.status ?? "");
+  const refreshLines = () => {
+    void queryClient.invalidateQueries({ queryKey: ["order-lines", orderId] });
+    void queryClient.invalidateQueries({ queryKey: ["order-events", orderId] });
+    void queryClient.invalidateQueries({ queryKey: ["order", orderId] });
+  };
+  const removeLine = useMutation({
+    mutationFn: async (line: OrderLine) => {
+      const { error } = await supabase.from("order_lines").delete().eq("id", line.id);
+      if (error) throw error;
+      await logOrderEvent({ order_id: orderId, event_type: "line_removed", actor_role: "staff", sku: line.sku, product_name: line.product_name, previous_quantity: line.current_quantity, new_quantity: 0 });
+    },
+    onSuccess: () => { toast.success("Item removed"); refreshLines(); },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
   const setStatus = useMutation({
     mutationFn: async (status: (typeof NEXT_STATUSES)[number]) => {
       if (!order) return;
@@ -311,6 +329,7 @@ function OrderBody({ orderId, isOwner }: { orderId: string; isOwner: boolean }) 
       })()}
 
       <section aria-label="Order items and totals" className="space-y-2">
+      {editableLines && <AddItem orderId={orderId} lines={lines} onAdded={refreshLines} />}
       <div className="max-h-[65vh] space-y-3 overflow-auto">
       {lines.map((line, index) => (
         <Card key={line.id}>
@@ -340,6 +359,9 @@ function OrderBody({ orderId, isOwner }: { orderId: string; isOwner: boolean }) 
                   <option value="available">Available</option><option value="preorder">Pre-order</option><option value="unavailable">Unavailable</option>
                 </select>
                 <ApprovalBadge status={line.approval_status} />
+                {editableLines && (
+                  <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" disabled={removeLine.isPending} aria-label={`Delete ${line.product_name}`} onClick={() => { if (window.confirm(`Delete ${line.product_name} from this order?`)) removeLine.mutate(line); }}><Trash2 className="h-4 w-4" /></Button>
+                )}
               </div>
             </div>
             {isOwner && (
@@ -413,4 +435,70 @@ function ApprovalBadge({ status }: { status?: string | undefined }) {
   const s = status ?? "pending";
   const label = s === "approved" ? "Approved" : s === "rejected" ? "Rejected" : "Awaiting approval";
   return <Badge variant={s === "approved" ? "default" : s === "rejected" ? "destructive" : "secondary"}>{label}</Badge>;
+}
+
+function AddItem({ orderId, lines, onAdded }: { orderId: string; lines: OrderLine[]; onAdded: () => void }) {
+  const [term, setTerm] = useState("");
+  const [qty, setQty] = useState(1);
+  const search = term.trim();
+  const { data: results = [] } = useQuery({
+    queryKey: ["staff-add-search", search],
+    enabled: search.length >= 2,
+    queryFn: async () => {
+      const safe = search.replace(/[%,()]/g, " ");
+      const { data, error } = await supabase
+        .from("products")
+        .select("id, sku, name, unit, default_price, cbm_per_carton, gross_weight_kg, image_path, categories(name)")
+        .eq("is_active", true)
+        .or(`name.ilike.%${safe}%,sku.ilike.%${safe}%`)
+        .order("name")
+        .limit(8);
+      if (error) throw error;
+      return data;
+    },
+  });
+  const add = useMutation({
+    mutationFn: async (product: (typeof results)[number]) => {
+      const quantity = Math.max(1, Math.floor(qty) || 1);
+      const existing = lines.find((l) => l.sku === product.sku);
+      if (existing) {
+        const next = existing.current_quantity + quantity;
+        const { error } = await supabase.from("order_lines").update({ current_quantity: next, proposed_quantity: next }).eq("id", existing.id);
+        if (error) throw error;
+        await logOrderEvent({ order_id: orderId, event_type: "quantity_changed", actor_role: "staff", sku: product.sku, product_name: product.name, previous_quantity: existing.current_quantity, new_quantity: next });
+        return;
+      }
+      const { error } = await supabase.from("order_lines").insert({
+        order_id: orderId, product_id: product.id, sku: product.sku, product_name: product.name,
+        unit: product.unit, cbm_per_carton: Number(product.cbm_per_carton), gross_weight_kg: Number(product.gross_weight_kg ?? 0),
+        image_path: product.image_path, category_name: (product.categories as { name: string } | null)?.name ?? null,
+        catalog_price: Number(product.default_price), negotiated_price: Number(product.default_price),
+        requested_quantity: 0, proposed_quantity: quantity, current_quantity: quantity,
+      });
+      if (error) throw error;
+      await logOrderEvent({ order_id: orderId, event_type: "line_added", actor_role: "staff", sku: product.sku, product_name: product.name, new_quantity: quantity });
+    },
+    onSuccess: () => { toast.success("Item added"); setTerm(""); onAdded(); },
+    onError: (error: Error) => toast.error(error.message),
+  });
+  return (
+    <div className="space-y-2 rounded-lg border border-border bg-card p-3">
+      <p className="text-sm font-semibold">Add item to order</p>
+      <div className="flex gap-2">
+        <Input aria-label="Search products to add" placeholder="Search by name or item no. (e.g. F-347)" value={term} onChange={(e) => setTerm(e.target.value)} className="h-10" />
+        <Input aria-label="Cartons to add" type="number" min={1} value={qty} onChange={(e) => setQty(Number(e.target.value))} className="h-10 w-24" />
+      </div>
+      {search.length >= 2 && (
+        <ul className="divide-y divide-border rounded-md border border-border">
+          {results.length === 0 && <li className="p-2 text-sm text-muted-foreground">No products found.</li>}
+          {results.map((p) => (
+            <li key={p.id} className="flex items-center justify-between gap-2 p-2 text-sm">
+              <span className="min-w-0 truncate"><span className="font-semibold">{p.sku}</span> · {p.name} <span className="text-muted-foreground">· {p.unit} · {formatMoney(Number(p.default_price))}</span></span>
+              <Button size="sm" disabled={add.isPending} onClick={() => add.mutate(p)}><Plus className="h-4 w-4" />Add</Button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
 }
