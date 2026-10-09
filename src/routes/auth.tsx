@@ -126,7 +126,7 @@ function AuthPage() {
   const handleGoogle = async () => {
     setBusy(true);
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: `${window.location.origin}/auth`,
+      redirect_uri: `${window.location.origin}/auth${inviteToken ? `?invite=${encodeURIComponent(inviteToken)}` : ""}`,
     });
     if (result.error) {
       const msg = String((result.error as { message?: string }).message ?? "");
