@@ -45,6 +45,20 @@ export function OrderFinance({ orderId, customerId, isStaff }: Props) {
   const [advanceMode, setAdvanceMode] = useState<"percent" | "amount">("percent");
   const [advance, setAdvance] = useState("30");
   const [pay, setPay] = useState({ amount: "", method: "Bank transfer", reference: "", paid_at: "" });
+  const [freight, setFreight] = useState("0");
+  const [handling, setHandling] = useState("0");
+  const { data: previewValue } = useQuery({
+    queryKey: ["order-product-value", orderId],
+    enabled: isStaff,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("order_lines")
+        .select("negotiated_price, current_quantity, final_quantity")
+        .eq("order_id", orderId);
+      if (error) throw error;
+      return (data ?? []).reduce((s, l) => s + Number(l.negotiated_price) * Number(l.final_quantity ?? l.current_quantity), 0);
+    },
+  });
 
   const refresh = () => {
     void qc.invalidateQueries({ queryKey: ["order-invoices", orderId] });
@@ -60,6 +74,7 @@ export function OrderFinance({ orderId, customerId, isStaff }: Props) {
         _order_id: orderId,
         _kind: kind,
         ...(advanceMode === "percent" ? { _advance_percent: value } : { _advance_amount: value }),
+        ...(kind === "commercial" ? { _freight: Number(freight) || 0, _handling: Number(handling) || 0 } : {}),
       });
       if (error) throw error;
     },
@@ -115,6 +130,10 @@ export function OrderFinance({ orderId, customerId, isStaff }: Props) {
   const reference = commercial ?? proforma;
   const balance = calcBalance(Number(reference?.total_value ?? 0), confirmed);
   const advanceDue = proforma ? Math.max(Number(proforma.advance_amount) - balance.totalPaid, 0) : 0;
+  const freightN = Number(freight) || 0;
+  const handlingN = Number(handling) || 0;
+  const chargesInvalid = freightN < 0 || handlingN < 0;
+  const previewProducts = previewValue ?? 0;
 
   return (
     <Card>
@@ -128,11 +147,22 @@ export function OrderFinance({ orderId, customerId, isStaff }: Props) {
           )}
         </div>
 
-        {reference && (
+        {commercial && (
+          <div className="space-y-1 rounded-md border p-3 text-sm">
+            <Row label="Final product subtotal" value={formatMoney(Number(commercial.product_value ?? commercial.total_value))} />
+            <Row label="Freight charges" value={formatMoney(Number(commercial.freight_charges ?? 0))} />
+            <Row label="Handling charges" value={formatMoney(Number(commercial.handling_charges ?? 0))} />
+            <Row label="Total commercial invoice" value={formatMoney(balance.finalValue)} strong />
+            <Row label="Payments received" value={formatMoney(balance.totalPaid)} />
+            <Row label="Balance due" value={formatMoney(balance.balanceDue)} strong />
+            {balance.overpayment > 0 && <Row label="Overpayment / credit — review" value={formatMoney(balance.overpayment)} strong />}
+          </div>
+        )}
+        {reference && !commercial && (
           <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
-            <Stat label={commercial ? "Final value" : "Order value"} value={formatMoney(balance.finalValue)} />
+            <Stat label="Order value" value={formatMoney(balance.finalValue)} />
             <Stat label="Paid" value={formatMoney(balance.totalPaid)} />
-            <Stat label={commercial ? "Balance due" : "Advance still due"} value={formatMoney(commercial ? balance.balanceDue : advanceDue)} />
+            <Stat label="Advance still due" value={formatMoney(advanceDue)} />
             {balance.overpayment > 0 ? (
               <Stat label="Overpaid — review" value={formatMoney(balance.overpayment)} />
             ) : (
@@ -149,6 +179,7 @@ export function OrderFinance({ orderId, customerId, isStaff }: Props) {
                 <p className="font-medium">{inv.invoice_number} · v{inv.version}</p>
                 <p className="stat-label">
                   {inv.kind === "proforma" ? "Proforma" : "Commercial"} · advance {formatMoney(Number(inv.advance_amount))}
+                  {inv.kind === "commercial" && ` · freight ${formatMoney(Number(inv.freight_charges ?? 0))} · handling ${formatMoney(Number(inv.handling_charges ?? 0))}`}
                 </p>
               </div>
               <div className="text-right">
@@ -179,12 +210,30 @@ export function OrderFinance({ orderId, customerId, isStaff }: Props) {
               <Button size="sm" onClick={() => issue.mutate("proforma")} disabled={issue.isPending}>
                 {proforma ? "Re-issue proforma" : "Proforma"}
               </Button>
-              <Button size="sm" variant="outline" onClick={() => issue.mutate("commercial")} disabled={issue.isPending}>
+            </div>
+            <div className="flex flex-wrap items-end gap-2">
+              <label className="text-xs">
+                Freight charges
+                <Input className="h-10 w-32" type="number" min={0} step="0.01" value={freight} onChange={(e) => setFreight(e.target.value)} />
+              </label>
+              <label className="text-xs">
+                Handling charges
+                <Input className="h-10 w-32" type="number" min={0} step="0.01" value={handling} onChange={(e) => setHandling(e.target.value)} />
+              </label>
+              <Button size="sm" variant="outline" onClick={() => issue.mutate("commercial")} disabled={issue.isPending || chargesInvalid}>
                 {commercial ? "Re-issue commercial" : "Commercial"}
               </Button>
             </div>
+            {chargesInvalid ? (
+              <p className="text-xs text-destructive">Charges must be zero or more.</p>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                Preview: products {formatMoney(previewProducts)} + freight {formatMoney(freightN)} + handling {formatMoney(handlingN)} ={" "}
+                <strong>{formatMoney(previewProducts + freightN + handlingN)}</strong>
+              </p>
+            )}
             <p className="text-xs text-muted-foreground">
-              Re-issuing keeps the old version visible as superseded. Uses final quantities and agreed prices.
+              Issued invoices are locked. Re-issuing creates a new version and keeps the old one visible. Freight and handling apply to commercial invoices only.
             </p>
           </div>
         )}
@@ -246,6 +295,15 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     <div className="space-y-1">
       <Label className="text-xs">{label}</Label>
       {children}
+    </div>
+  );
+}
+
+function Row({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
+  return (
+    <div className={`flex justify-between ${strong ? "font-semibold" : ""}`}>
+      <span>{label}</span>
+      <span>{value}</span>
     </div>
   );
 }

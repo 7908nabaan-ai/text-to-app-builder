@@ -253,12 +253,15 @@ export type Database = {
           created_by: string | null
           currency: string
           customer_id: string
+          freight_charges: number
+          handling_charges: number
           id: string
           invoice_number: string
           issue_date: string
           kind: Database["public"]["Enums"]["invoice_kind"]
           order_id: string
           payment_instructions: string | null
+          product_value: number | null
           state: Database["public"]["Enums"]["invoice_state"]
           total_cbm: number
           total_value: number
@@ -273,12 +276,15 @@ export type Database = {
           created_by?: string | null
           currency?: string
           customer_id: string
+          freight_charges?: number
+          handling_charges?: number
           id?: string
           invoice_number: string
           issue_date?: string
           kind: Database["public"]["Enums"]["invoice_kind"]
           order_id: string
           payment_instructions?: string | null
+          product_value?: number | null
           state?: Database["public"]["Enums"]["invoice_state"]
           total_cbm?: number
           total_value?: number
@@ -293,12 +299,15 @@ export type Database = {
           created_by?: string | null
           currency?: string
           customer_id?: string
+          freight_charges?: number
+          handling_charges?: number
           id?: string
           invoice_number?: string
           issue_date?: string
           kind?: Database["public"]["Enums"]["invoice_kind"]
           order_id?: string
           payment_instructions?: string | null
+          product_value?: number | null
           state?: Database["public"]["Enums"]["invoice_state"]
           total_cbm?: number
           total_value?: number
@@ -753,6 +762,8 @@ export type Database = {
         Args: {
           _advance_amount?: number
           _advance_percent?: number
+          _freight?: number
+          _handling?: number
           _kind: Database["public"]["Enums"]["invoice_kind"]
           _order_id: string
         }
