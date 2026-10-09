@@ -55,6 +55,7 @@ type Product = {
   carton_width: number | null;
   carton_height: number | null;
   cbm_per_carton: number;
+  gross_weight_kg: number | null;
   default_price: number;
   unit: string;
   is_active: boolean;
@@ -88,7 +89,7 @@ function ProductsBody() {
       const { data, error } = await supabase
         .from("products")
         .select(
-          "id, sku, name, category_id, description, carton_length, carton_width, carton_height, cbm_per_carton, default_price, unit, is_active, image_path",
+          "id, sku, name, category_id, description, carton_length, carton_width, carton_height, cbm_per_carton, gross_weight_kg, default_price, unit, is_active, image_path",
         )
         .order("name");
       if (error) throw error;
@@ -129,6 +130,7 @@ function ProductsBody() {
       carton_width: number | null;
       carton_height: number | null;
       cbm_per_carton: number;
+      gross_weight_kg: number | null;
       default_price: number;
       unit: string;
       is_active: boolean;
@@ -208,6 +210,7 @@ function ProductsBody() {
       carton_width: width,
       carton_height: height,
       cbm_per_carton: cbm,
+      gross_weight_kg: num("gross_weight_kg"),
       default_price: price,
       unit: String(form.get("unit") ?? "Carton").trim() || "Carton",
       is_active: form.get("is_active") === "on",
@@ -351,6 +354,10 @@ function ProductsBody() {
                     defaultValue={editing?.default_price ?? ""}
                   />
                 </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="gross_weight_kg">Gross weight per carton (kg)</Label>
+                <Input id="gross_weight_kg" name="gross_weight_kg" type="number" step="0.01" min={0} className="h-11" defaultValue={editing?.gross_weight_kg ?? ""} />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="description">Description</Label>

@@ -18,17 +18,24 @@ import { Route as ProductsRouteImport } from './routes/products'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedCatalogRouteImport } from './routes/_authenticated/catalog'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedFavouritesRouteImport } from './routes/_authenticated/favourites'
 import { Route as AuthenticatedHistoryRouteImport } from './routes/_authenticated/history'
 import { Route as AuthenticatedInvoicesRouteImport } from './routes/_authenticated/invoices'
+import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
+import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticated/payments'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
+import { Route as AuthenticatedSupportRouteImport } from './routes/_authenticated/support'
+import { Route as AuthenticatedOrdersIndexRouteImport } from './routes/_authenticated/orders.index'
+import { Route as AuthenticatedOrdersOrderIdRouteImport } from './routes/_authenticated/orders.$orderId'
 import { Route as AuthenticatedStaffCategoriesRouteImport } from './routes/_authenticated/staff.categories'
 import { Route as AuthenticatedStaffCustomersRouteImport } from './routes/_authenticated/staff.customers'
 import { Route as AuthenticatedStaffImportRouteImport } from './routes/_authenticated/staff.import'
 import { Route as AuthenticatedStaffInvitesRouteImport } from './routes/_authenticated/staff.invites'
 import { Route as AuthenticatedStaffProductsRouteImport } from './routes/_authenticated/staff.products'
 import { Route as AuthenticatedStaffSettingsRouteImport } from './routes/_authenticated/staff.settings'
+import { Route as AuthenticatedStaffOrdersIndexRouteImport } from './routes/_authenticated/staff.orders.index'
 import { Route as AuthenticatedStaffOrdersOrderIdRouteImport } from './routes/_authenticated/staff.orders.$orderId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -75,6 +82,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedFavouritesRoute = AuthenticatedFavouritesRouteImport.update({
+  id: '/favourites',
+  path: '/favourites',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedHistoryRoute = AuthenticatedHistoryRouteImport.update({
   id: '/history',
   path: '/history',
@@ -85,12 +97,22 @@ const AuthenticatedInvoicesRoute = AuthenticatedInvoicesRouteImport.update({
   path: '/invoices',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedMessagesRoute = AuthenticatedMessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedNotificationsRoute =
   AuthenticatedNotificationsRouteImport.update({
     id: '/notifications',
     path: '/notifications',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPaymentsRoute = AuthenticatedPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -101,6 +123,23 @@ const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
   path: '/reports',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSupportRoute = AuthenticatedSupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedOrdersIndexRoute =
+  AuthenticatedOrdersIndexRouteImport.update({
+    id: '/orders/',
+    path: '/orders/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedOrdersOrderIdRoute =
+  AuthenticatedOrdersOrderIdRouteImport.update({
+    id: '/orders/$orderId',
+    path: '/orders/$orderId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedStaffCategoriesRoute =
   AuthenticatedStaffCategoriesRouteImport.update({
     id: '/staff/categories',
@@ -137,6 +176,12 @@ const AuthenticatedStaffSettingsRoute =
     path: '/staff/settings',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedStaffOrdersIndexRoute =
+  AuthenticatedStaffOrdersIndexRouteImport.update({
+    id: '/staff/orders/',
+    path: '/staff/orders/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedStaffOrdersOrderIdRoute =
   AuthenticatedStaffOrdersOrderIdRouteImport.update({
     id: '/staff/orders/$orderId',
@@ -153,18 +198,25 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/catalog': typeof AuthenticatedCatalogRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/favourites': typeof AuthenticatedFavouritesRoute
   '/history': typeof AuthenticatedHistoryRoute
   '/invoices': typeof AuthenticatedInvoicesRoute
+  '/messages': typeof AuthenticatedMessagesRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
+  '/payments': typeof AuthenticatedPaymentsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/reports': typeof AuthenticatedReportsRoute
+  '/support': typeof AuthenticatedSupportRoute
+  '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
   '/staff/categories': typeof AuthenticatedStaffCategoriesRoute
   '/staff/customers': typeof AuthenticatedStaffCustomersRoute
   '/staff/import': typeof AuthenticatedStaffImportRoute
   '/staff/invites': typeof AuthenticatedStaffInvitesRoute
   '/staff/products': typeof AuthenticatedStaffProductsRoute
   '/staff/settings': typeof AuthenticatedStaffSettingsRoute
+  '/orders/': typeof AuthenticatedOrdersIndexRoute
   '/staff/orders/$orderId': typeof AuthenticatedStaffOrdersOrderIdRoute
+  '/staff/orders/': typeof AuthenticatedStaffOrdersIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -175,18 +227,25 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/catalog': typeof AuthenticatedCatalogRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/favourites': typeof AuthenticatedFavouritesRoute
   '/history': typeof AuthenticatedHistoryRoute
   '/invoices': typeof AuthenticatedInvoicesRoute
+  '/messages': typeof AuthenticatedMessagesRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
+  '/payments': typeof AuthenticatedPaymentsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/reports': typeof AuthenticatedReportsRoute
+  '/support': typeof AuthenticatedSupportRoute
+  '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
   '/staff/categories': typeof AuthenticatedStaffCategoriesRoute
   '/staff/customers': typeof AuthenticatedStaffCustomersRoute
   '/staff/import': typeof AuthenticatedStaffImportRoute
   '/staff/invites': typeof AuthenticatedStaffInvitesRoute
   '/staff/products': typeof AuthenticatedStaffProductsRoute
   '/staff/settings': typeof AuthenticatedStaffSettingsRoute
+  '/orders': typeof AuthenticatedOrdersIndexRoute
   '/staff/orders/$orderId': typeof AuthenticatedStaffOrdersOrderIdRoute
+  '/staff/orders': typeof AuthenticatedStaffOrdersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -199,18 +258,25 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/catalog': typeof AuthenticatedCatalogRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/favourites': typeof AuthenticatedFavouritesRoute
   '/_authenticated/history': typeof AuthenticatedHistoryRoute
   '/_authenticated/invoices': typeof AuthenticatedInvoicesRoute
+  '/_authenticated/messages': typeof AuthenticatedMessagesRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
+  '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
+  '/_authenticated/support': typeof AuthenticatedSupportRoute
+  '/_authenticated/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
   '/_authenticated/staff/categories': typeof AuthenticatedStaffCategoriesRoute
   '/_authenticated/staff/customers': typeof AuthenticatedStaffCustomersRoute
   '/_authenticated/staff/import': typeof AuthenticatedStaffImportRoute
   '/_authenticated/staff/invites': typeof AuthenticatedStaffInvitesRoute
   '/_authenticated/staff/products': typeof AuthenticatedStaffProductsRoute
   '/_authenticated/staff/settings': typeof AuthenticatedStaffSettingsRoute
+  '/_authenticated/orders/': typeof AuthenticatedOrdersIndexRoute
   '/_authenticated/staff/orders/$orderId': typeof AuthenticatedStaffOrdersOrderIdRoute
+  '/_authenticated/staff/orders/': typeof AuthenticatedStaffOrdersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -223,18 +289,25 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/catalog'
     | '/dashboard'
+    | '/favourites'
     | '/history'
     | '/invoices'
+    | '/messages'
     | '/notifications'
+    | '/payments'
     | '/profile'
     | '/reports'
+    | '/support'
+    | '/orders/$orderId'
     | '/staff/categories'
     | '/staff/customers'
     | '/staff/import'
     | '/staff/invites'
     | '/staff/products'
     | '/staff/settings'
+    | '/orders/'
     | '/staff/orders/$orderId'
+    | '/staff/orders/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -245,18 +318,25 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/catalog'
     | '/dashboard'
+    | '/favourites'
     | '/history'
     | '/invoices'
+    | '/messages'
     | '/notifications'
+    | '/payments'
     | '/profile'
     | '/reports'
+    | '/support'
+    | '/orders/$orderId'
     | '/staff/categories'
     | '/staff/customers'
     | '/staff/import'
     | '/staff/invites'
     | '/staff/products'
     | '/staff/settings'
+    | '/orders'
     | '/staff/orders/$orderId'
+    | '/staff/orders'
   id:
     | '__root__'
     | '/'
@@ -268,18 +348,25 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/catalog'
     | '/_authenticated/dashboard'
+    | '/_authenticated/favourites'
     | '/_authenticated/history'
     | '/_authenticated/invoices'
+    | '/_authenticated/messages'
     | '/_authenticated/notifications'
+    | '/_authenticated/payments'
     | '/_authenticated/profile'
     | '/_authenticated/reports'
+    | '/_authenticated/support'
+    | '/_authenticated/orders/$orderId'
     | '/_authenticated/staff/categories'
     | '/_authenticated/staff/customers'
     | '/_authenticated/staff/import'
     | '/_authenticated/staff/invites'
     | '/_authenticated/staff/products'
     | '/_authenticated/staff/settings'
+    | '/_authenticated/orders/'
     | '/_authenticated/staff/orders/$orderId'
+    | '/_authenticated/staff/orders/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -357,6 +444,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/favourites': {
+      id: '/_authenticated/favourites'
+      path: '/favourites'
+      fullPath: '/favourites'
+      preLoaderRoute: typeof AuthenticatedFavouritesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/history': {
       id: '/_authenticated/history'
       path: '/history'
@@ -371,11 +465,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInvoicesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/messages': {
+      id: '/_authenticated/messages'
+      path: '/messages'
+      fullPath: '/messages'
+      preLoaderRoute: typeof AuthenticatedMessagesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/notifications': {
       id: '/_authenticated/notifications'
       path: '/notifications'
       fullPath: '/notifications'
       preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/payments': {
+      id: '/_authenticated/payments'
+      path: '/payments'
+      fullPath: '/payments'
+      preLoaderRoute: typeof AuthenticatedPaymentsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/profile': {
@@ -390,6 +498,27 @@ declare module '@tanstack/react-router' {
       path: '/reports'
       fullPath: '/reports'
       preLoaderRoute: typeof AuthenticatedReportsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/support': {
+      id: '/_authenticated/support'
+      path: '/support'
+      fullPath: '/support'
+      preLoaderRoute: typeof AuthenticatedSupportRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/orders/': {
+      id: '/_authenticated/orders/'
+      path: '/orders'
+      fullPath: '/orders/'
+      preLoaderRoute: typeof AuthenticatedOrdersIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/orders/$orderId': {
+      id: '/_authenticated/orders/$orderId'
+      path: '/orders/$orderId'
+      fullPath: '/orders/$orderId'
+      preLoaderRoute: typeof AuthenticatedOrdersOrderIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/staff/categories': {
@@ -434,6 +563,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStaffSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/staff/orders/': {
+      id: '/_authenticated/staff/orders/'
+      path: '/staff/orders'
+      fullPath: '/staff/orders/'
+      preLoaderRoute: typeof AuthenticatedStaffOrdersIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/staff/orders/$orderId': {
       id: '/_authenticated/staff/orders/$orderId'
       path: '/staff/orders/$orderId'
@@ -447,35 +583,49 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedCatalogRoute: typeof AuthenticatedCatalogRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedFavouritesRoute: typeof AuthenticatedFavouritesRoute
   AuthenticatedHistoryRoute: typeof AuthenticatedHistoryRoute
   AuthenticatedInvoicesRoute: typeof AuthenticatedInvoicesRoute
+  AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
+  AuthenticatedPaymentsRoute: typeof AuthenticatedPaymentsRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
+  AuthenticatedSupportRoute: typeof AuthenticatedSupportRoute
+  AuthenticatedOrdersOrderIdRoute: typeof AuthenticatedOrdersOrderIdRoute
   AuthenticatedStaffCategoriesRoute: typeof AuthenticatedStaffCategoriesRoute
   AuthenticatedStaffCustomersRoute: typeof AuthenticatedStaffCustomersRoute
   AuthenticatedStaffImportRoute: typeof AuthenticatedStaffImportRoute
   AuthenticatedStaffInvitesRoute: typeof AuthenticatedStaffInvitesRoute
   AuthenticatedStaffProductsRoute: typeof AuthenticatedStaffProductsRoute
   AuthenticatedStaffSettingsRoute: typeof AuthenticatedStaffSettingsRoute
+  AuthenticatedOrdersIndexRoute: typeof AuthenticatedOrdersIndexRoute
   AuthenticatedStaffOrdersOrderIdRoute: typeof AuthenticatedStaffOrdersOrderIdRoute
+  AuthenticatedStaffOrdersIndexRoute: typeof AuthenticatedStaffOrdersIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCatalogRoute: AuthenticatedCatalogRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedFavouritesRoute: AuthenticatedFavouritesRoute,
   AuthenticatedHistoryRoute: AuthenticatedHistoryRoute,
   AuthenticatedInvoicesRoute: AuthenticatedInvoicesRoute,
+  AuthenticatedMessagesRoute: AuthenticatedMessagesRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
+  AuthenticatedPaymentsRoute: AuthenticatedPaymentsRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
+  AuthenticatedSupportRoute: AuthenticatedSupportRoute,
+  AuthenticatedOrdersOrderIdRoute: AuthenticatedOrdersOrderIdRoute,
   AuthenticatedStaffCategoriesRoute: AuthenticatedStaffCategoriesRoute,
   AuthenticatedStaffCustomersRoute: AuthenticatedStaffCustomersRoute,
   AuthenticatedStaffImportRoute: AuthenticatedStaffImportRoute,
   AuthenticatedStaffInvitesRoute: AuthenticatedStaffInvitesRoute,
   AuthenticatedStaffProductsRoute: AuthenticatedStaffProductsRoute,
   AuthenticatedStaffSettingsRoute: AuthenticatedStaffSettingsRoute,
+  AuthenticatedOrdersIndexRoute: AuthenticatedOrdersIndexRoute,
   AuthenticatedStaffOrdersOrderIdRoute: AuthenticatedStaffOrdersOrderIdRoute,
+  AuthenticatedStaffOrdersIndexRoute: AuthenticatedStaffOrdersIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

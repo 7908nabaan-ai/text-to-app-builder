@@ -50,6 +50,27 @@
       "when": 1791504334916,
       "tag": "0006_lock_issued_invoice_amounts",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791508426949,
+      "tag": "0007_ordering_engine",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1791508473832,
+      "tag": "0008_allow_draft_requested_qty",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791508646038,
+      "tag": "0009_order_chat_availability",
+      "breakpoints": true
     }
   ]
 }

@@ -73,7 +73,7 @@ function SettingsBody() {
       const { data, error } = await supabase
         .from("container_types")
         .select("*")
-        .order("capacity_cbm");
+        .order("sort_order").order("capacity_cbm");
       if (error) throw error;
       return data;
     },
@@ -105,18 +105,37 @@ function SettingsBody() {
     onError: (error: Error) => toast.error(error.message),
   });
 
+  const [rate, setRate] = useState("");
+  useEffect(() => { if (data) setRate(String(data.myr_rate ?? 3.95)); }, [data]);
+  const saveRate = useMutation({
+    mutationFn: async () => {
+      const value = Number(rate);
+      if (!(value > 0)) throw new Error("Enter a rate above zero");
+      const { error } = await supabase.from("app_settings").update({ myr_rate: value }).eq("id", data!.id);
+      if (error) throw error;
+    },
+    onSuccess: () => { toast.success("Exchange rate saved"); void queryClient.invalidateQueries({ queryKey: ["myr-rate"] }); },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
   const updateContainer = useMutation({
-    mutationFn: async ({ id, capacity }: { id: string; capacity: number }) => {
-      const { error } = await supabase
-        .from("container_types")
-        .update({ capacity_cbm: capacity })
-        .eq("id", id);
+    mutationFn: async ({ id, ...patch }: { id: string; name?: string; capacity_cbm?: number; max_weight_kg?: number; warning_percent?: number; is_active?: boolean }) => {
+      const { error } = await supabase.from("container_types").update(patch).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Container capacity updated");
+      toast.success("Container updated — existing orders keep their original limits");
       void queryClient.invalidateQueries({ queryKey: ["container-types"] });
+      void queryClient.invalidateQueries({ queryKey: ["container-types-active"] });
     },
+    onError: (error: Error) => toast.error(error.message),
+  });
+  const addContainer = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("container_types").insert({ code: `NEW-${Date.now().toString().slice(-5)}`, name: "New container", capacity_cbm: 1, max_weight_kg: 0, is_active: false, sort_order: containers.length + 1 });
+      if (error) throw error;
+    },
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ["container-types"] }),
     onError: (error: Error) => toast.error(error.message),
   });
 
@@ -166,29 +185,27 @@ function SettingsBody() {
       </Card>
 
       <Card>
+        <CardContent className="space-y-3 pt-6">
+          <p className="stat-label">Currency display</p>
+          <p className="text-sm text-muted-foreground">Prices are stored in USD. MYR amounts are shown at this rate and never change saved or negotiated prices.</p>
+          <div className="flex items-end gap-2">
+            <div className="space-y-1.5"><Label htmlFor="myr_rate">MYR per 1 USD</Label><Input id="myr_rate" type="number" step="0.0001" className="h-11 w-40" value={rate} onChange={(e) => setRate(e.target.value)} /></div>
+            <Button className="h-11" onClick={() => saveRate.mutate()} disabled={saveRate.isPending}>Save rate</Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
         <CardContent className="space-y-4 pt-6">
-          <p className="stat-label">Container types</p>
-          {containers.map((container) => (
-            <div key={container.id} className="flex items-end gap-3">
-              <div className="flex-1 space-y-1.5">
-                <Label htmlFor={`c-${container.id}`}>
-                  {container.name} ({container.code})
-                </Label>
-                <Input
-                  id={`c-${container.id}`}
-                  type="number"
-                  step="0.01"
-                  className="h-11"
-                  defaultValue={container.capacity_cbm}
-                  onBlur={(e) => {
-                    const capacity = Number(e.target.value);
-                    if (capacity > 0 && capacity !== container.capacity_cbm) {
-                      updateContainer.mutate({ id: container.id, capacity });
-                    }
-                  }}
-                />
-              </div>
-              <span className="pb-3 text-sm text-muted-foreground">CBM</span>
+          <div className="flex items-center justify-between"><p className="stat-label">Container settings</p><Button size="sm" variant="outline" onClick={() => addContainer.mutate()}>Add container</Button></div>
+          <p className="text-sm text-muted-foreground">Changes apply to new orders only. Existing orders keep the limits they were created with.</p>
+          {containers.map((c) => (
+            <div key={c.id} className="grid gap-2 rounded-md border border-border p-3 sm:grid-cols-[2fr_1fr_1fr_1fr_auto] sm:items-end">
+              <div className="space-y-1"><Label htmlFor={`n-${c.id}`}>Container name</Label><Input id={`n-${c.id}`} defaultValue={c.name} onBlur={(e) => e.target.value.trim() && e.target.value !== c.name && updateContainer.mutate({ id: c.id, name: e.target.value.trim() })} /></div>
+              <div className="space-y-1"><Label htmlFor={`c-${c.id}`}>Max CBM</Label><Input id={`c-${c.id}`} type="number" step="0.01" defaultValue={c.capacity_cbm} onBlur={(e) => { const v = Number(e.target.value); if (v > 0 && v !== Number(c.capacity_cbm)) updateContainer.mutate({ id: c.id, capacity_cbm: v }); }} /></div>
+              <div className="space-y-1"><Label htmlFor={`w-${c.id}`}>Max gross weight (kg)</Label><Input id={`w-${c.id}`} type="number" step="1" defaultValue={c.max_weight_kg} onBlur={(e) => { const v = Number(e.target.value); if (v >= 0 && v !== Number(c.max_weight_kg)) updateContainer.mutate({ id: c.id, max_weight_kg: v }); }} /></div>
+              <div className="space-y-1"><Label htmlFor={`t-${c.id}`}>Warning at (%)</Label><Input id={`t-${c.id}`} type="number" step="1" defaultValue={c.warning_percent} onBlur={(e) => { const v = Number(e.target.value); if (v > 0 && v <= 100 && v !== Number(c.warning_percent)) updateContainer.mutate({ id: c.id, warning_percent: v }); }} /></div>
+              <label className="flex h-9 items-center gap-2 text-sm"><input type="checkbox" checked={c.is_active} onChange={(e) => updateContainer.mutate({ id: c.id, is_active: e.target.checked })} />Active</label>
             </div>
           ))}
         </CardContent>

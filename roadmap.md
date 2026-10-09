@@ -31,3 +31,22 @@
 - [ ] Orders grouped by status; invoices split Proforma/Commercial with status + View/PDF/Excel/Print
 - [ ] Configurable container settings (name, max CBM, max gross weight, warning levels); orders keep original values
 - [ ] Permission check: customers blocked from every staff page
+- [ ] History module (read-only): customers → completed orders, shipments, PI, CI, payments; completed order detail
+- [ ] Reports module: customers, products, orders, shipments, invoices, payments, containers, sales; date range + country; PDF/Excel/Print
+- [ ] Owner dashboard: orders, negotiations, outstanding, shipments, sales, customers, container utilization, quick actions
+- [ ] USD/MYR display switch (display only, never changes stored prices)
+- [ ] Negotiation timeline: request → Sky Plus proposal → customer response → final
+- [ ] Favourite products, recently / frequently ordered in Quick Order
+- [ ] Larger product images with packing, CBM, weight, USD + MYR price
+- [ ] Ordering page 3-column: catalogue + categories + current order center; summary, status timeline, negotiation chat, recent changes right
+- [ ] Line status colours (available / updated by Sky Plus / pre-order / unavailable) + bottom totals bar
+
+## Status after ordering pass
+- [x] Separate customer / staff menus
+- [x] Container choice before ordering, quick order, live CBM/weight panel, USD/MYR switch
+- [x] Order detail with negotiation chat, status timeline, line availability colours
+- [x] Staff: orders grouped by stage, availability + container change, container/weight/MYR settings, product weight
+- [ ] Customer Workspace tabs (staff)
+- [ ] Read-only History module + comprehensive Reports with print
+- [ ] Owner dashboard metrics
+- [ ] Invoice PI/CI split with sent/paid status + print

@@ -1,6 +1,6 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
-import { Bell, Boxes, ClipboardList, FileText, History, LayoutGrid, LogOut, Package, Search, Send, Settings, Ship, ShoppingCart, Tags, UserRound, Users, Menu, X } from "lucide-react";
+import { BarChart3, Heart, Home, LifeBuoy, MessageCircle, Wallet, Bell, Boxes, ClipboardList, FileText, History, LayoutGrid, LogOut, Package, Search, Send, Settings, Ship, ShoppingCart, Tags, UserRound, Users, Menu, X } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { BackButton } from "@/components/back-button";
@@ -11,23 +11,31 @@ import shippingImage from "@/assets/hero-containers.jpg";
 
 type NavItem = { to: string; label: string; icon: typeof Ship };
 const customerNav: NavItem[] = [
-  { to: "/dashboard", label: "My container order", icon: ShoppingCart },
-  { to: "/catalog", label: "Product catalogue", icon: LayoutGrid },
+  { to: "/dashboard", label: "Dashboard", icon: Home },
+  { to: "/catalog", label: "Order & catalogue", icon: ShoppingCart },
+  { to: "/orders", label: "My orders", icon: ClipboardList },
   { to: "/history", label: "Order history", icon: History },
   { to: "/invoices", label: "Invoices", icon: FileText },
+  { to: "/payments", label: "Payments & balance", icon: Wallet },
+  { to: "/favourites", label: "Favourites", icon: Heart },
+  { to: "/messages", label: "Messages", icon: MessageCircle },
+  { to: "/notifications", label: "Notifications", icon: Bell },
   { to: "/profile", label: "My profile", icon: UserRound },
+  { to: "/support", label: "Help & support", icon: LifeBuoy },
 ];
 const staffNav: NavItem[] = [
-  { to: "/dashboard", label: "Home & orders", icon: ClipboardList },
+  { to: "/dashboard", label: "Dashboard", icon: Home },
+  { to: "/staff/orders", label: "Orders", icon: ClipboardList },
+  { to: "/staff/customers", label: "Customers", icon: Users },
   { to: "/staff/products", label: "Products", icon: Package },
   { to: "/staff/import", label: "Import catalogue", icon: Boxes },
   { to: "/staff/categories", label: "Categories", icon: Tags },
-  { to: "/staff/customers", label: "Customers", icon: Users },
+  { to: "/invoices", label: "Invoices", icon: FileText },
+  { to: "/history", label: "History", icon: History },
+  { to: "/reports", label: "Reports", icon: BarChart3 },
+  { to: "/messages", label: "Messages", icon: MessageCircle },
   { to: "/staff/invites", label: "Invites", icon: Send },
   { to: "/staff/settings", label: "Settings", icon: Settings },
-];
-const secondaryNav: NavItem[] = [
-  { to: "/reports", label: "Reports", icon: FileText },
   { to: "/notifications", label: "Notifications", icon: Bell },
 ];
 
@@ -73,9 +81,9 @@ export function AppShell({ children, isStaff, title }: { children: ReactNode; is
       {menuOpen && <div className="fixed inset-0 top-16 z-30 bg-foreground/40 lg:hidden" onClick={() => setMenuOpen(false)} />}
       <aside className={cn("workspace-sidebar fixed bottom-0 left-0 top-16 z-30 flex w-56 flex-col overflow-y-auto bg-sidebar text-sidebar-foreground transition-transform lg:translate-x-0", menuOpen ? "translate-x-0" : "-translate-x-full")}>
         <nav className="py-5" aria-label="Main navigation">
-          {[...primary, ...secondaryNav].map((item) => {
+          {primary.map((item) => {
             const Icon = item.icon;
-            return <Link key={item.to} to={item.to} onClick={() => setMenuOpen(false)} className={cn("flex min-h-11 items-center gap-3 border-l-3 border-transparent px-5 py-3 text-sm font-medium text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground", pathname.startsWith(item.to) && "border-sidebar-primary bg-sidebar-accent text-sidebar-foreground")}><Icon className="h-4 w-4 shrink-0" />{item.label}</Link>;
+            return <Link key={item.to} to={item.to} onClick={() => setMenuOpen(false)} className={cn("flex min-h-11 items-center gap-3 border-l-3 border-transparent px-5 py-3 text-sm font-medium text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground", (pathname === item.to || pathname.startsWith(item.to + "/")) && "border-sidebar-primary bg-sidebar-accent text-sidebar-foreground")}><Icon className="h-4 w-4 shrink-0" />{item.label}</Link>;
           })}
         </nav>
         <div className="relative mt-auto min-h-64 overflow-hidden">

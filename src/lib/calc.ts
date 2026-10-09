@@ -114,3 +114,28 @@ export const formatMoney = (amount: number, currency = "USD") =>
   }).format(amount);
 
 export const formatCbm = (value: number) => `${value.toFixed(2)} CBM`;
+
+export type LoadLine = CalcLine & { weightKg: number };
+export type LoadLimits = { capacityCbm: number; maxWeightKg: number; warningPercent: number };
+
+/** Container load: CBM + gross weight against limits. Warns, never blocks. */
+export function calcLoad(lines: LoadLine[], limits: LoadLimits) {
+  const base = calcOrderTotals(lines, limits.capacityCbm);
+  const totalWeightKg = round(lines.reduce((s, l) => s + l.weightKg * l.quantity, 0), 2);
+  const weightPercent = limits.maxWeightKg > 0 ? round((totalWeightKg / limits.maxWeightKg) * 100, 2) : 0;
+  const warn = limits.warningPercent > 0 ? limits.warningPercent : 90;
+  return {
+    ...base,
+    totalWeightKg,
+    maxWeightKg: limits.maxWeightKg,
+    remainingWeightKg: Math.max(0, round(limits.maxWeightKg - totalWeightKg, 2)),
+    weightPercent,
+    isOverWeight: limits.maxWeightKg > 0 && totalWeightKg > limits.maxWeightKg,
+    cbmNearLimit: base.utilizationPercent >= warn && !base.isOverCapacity,
+    weightNearLimit: weightPercent >= warn && totalWeightKg <= limits.maxWeightKg,
+    totalCartons: lines.reduce((s, l) => s + l.quantity, 0),
+    totalProducts: lines.filter((l) => l.quantity > 0).length,
+  };
+}
+
+export const formatKg = (value: number) => `${new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(value)} kg`;

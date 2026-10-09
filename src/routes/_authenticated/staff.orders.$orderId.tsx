@@ -12,6 +12,9 @@ import { Progress } from "@/components/ui/progress";
 import { calcOrderTotals, formatCbm, formatMoney } from "@/lib/calc";
 import { STATUS_LABELS, logOrderEvent, type OrderLine } from "@/lib/orders";
 import { OrderFinance } from "@/components/order-finance";
+import { LiveOrderPanel } from "@/components/ordering";
+import { LineStatus, NegotiationChat } from "@/components/order-panels";
+import { useContainerTypes } from "@/components/quick-order";
 
 export const Route = createFileRoute("/_authenticated/staff/orders/$orderId")({
   head: () => ({
@@ -155,6 +158,26 @@ function OrderBody({ orderId, isOwner }: { orderId: string; isOwner: boolean }) 
     onError: (error: Error) => toast.error(error.message),
   });
 
+  const { data: containers = [] } = useContainerTypes();
+  const setAvailability = useMutation({
+    mutationFn: async ({ line, availability }: { line: OrderLine; availability: string }) => {
+      const { error } = await supabase.from("order_lines").update({ availability }).eq("id", line.id);
+      if (error) throw error;
+      await logOrderEvent({ order_id: orderId, event_type: "availability_changed", actor_role: "staff", sku: line.sku, product_name: line.product_name, reason: availability });
+    },
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ["order-lines", orderId] }),
+    onError: (error: Error) => toast.error(error.message),
+  });
+  const setContainer = useMutation({
+    mutationFn: async (containerTypeId: string) => {
+      const { error } = await supabase.from("orders").update({ container_type_id: containerTypeId }).eq("id", orderId);
+      if (error) throw error;
+      await logOrderEvent({ order_id: orderId, event_type: "container_changed", actor_role: "staff", reason: containers.find((c) => c.id === containerTypeId)?.name ?? null });
+    },
+    onSuccess: () => { toast.success("Container changed"); void queryClient.invalidateQueries({ queryKey: ["order", orderId] }); },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
   const setStatus = useMutation({
     mutationFn: async (status: (typeof NEXT_STATUSES)[number]) => {
       if (!order) return;
@@ -224,7 +247,8 @@ function OrderBody({ orderId, isOwner }: { orderId: string; isOwner: boolean }) 
   );
 
   return (
-    <div className="space-y-4">
+    <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_300px]">
+    <div className="min-w-0 space-y-4">
       <Card>
         <CardContent className="space-y-3 pt-5">
           <div className="flex items-center justify-between">
@@ -251,6 +275,12 @@ function OrderBody({ orderId, isOwner }: { orderId: string; isOwner: boolean }) 
               <p className="stat-label">Value</p>
               <p className="font-semibold">{formatMoney(totals.totalValue)}</p>
             </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            <span className="text-muted-foreground">Container</span>
+            <select aria-label="Container type" className="h-9 rounded-md border border-input bg-card px-2" value={order.container_type_id} disabled={setContainer.isPending} onChange={(e) => setContainer.mutate(e.target.value)}>
+              {containers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
           </div>
           <div className="flex flex-wrap gap-2">
             {NEXT_STATUSES.map((status) => (
@@ -294,7 +324,13 @@ function OrderBody({ orderId, isOwner }: { orderId: string; isOwner: boolean }) 
                   {line.sku} · requested {line.requested_quantity}
                 </p>
               </div>
-              <ApprovalBadge status={line.approval_status} />
+              <div className="flex flex-wrap items-center gap-2">
+                <LineStatus line={line} />
+                <select aria-label={`Availability of ${line.product_name}`} className="h-8 rounded-md border border-input bg-card px-2 text-xs" value={line.availability ?? "available"} onChange={(e) => setAvailability.mutate({ line, availability: e.target.value })}>
+                  <option value="available">Available</option><option value="preorder">Pre-order</option><option value="unavailable">Unavailable</option>
+                </select>
+                <ApprovalBadge status={line.approval_status} />
+              </div>
             </div>
             {isOwner && (
               <div className="flex gap-2">
@@ -351,6 +387,11 @@ function OrderBody({ orderId, isOwner }: { orderId: string; isOwner: boolean }) 
           ))}
         </CardContent>
       </Card>
+    </div>
+    <div className="space-y-4 xl:sticky xl:top-20 xl:max-h-[calc(100vh-6rem)] xl:overflow-y-auto">
+      <LiveOrderPanel order={order} lines={lines} sticky={false} />
+      <NegotiationChat orderId={orderId} compact />
+    </div>
     </div>
   );
 }
