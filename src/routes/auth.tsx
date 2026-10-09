@@ -46,6 +46,7 @@ function AuthPage() {
   const [phone, setPhone] = useState("");
   const [busy, setBusy] = useState(false);
   const [invite, setInvite] = useState<InviteCheck | null>(null);
+  const [inviteChecking, setInviteChecking] = useState(Boolean(inviteToken));
   const [oauthError, setOauthError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -71,11 +72,15 @@ function AuthPage() {
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
     if (!inviteToken) {
       setInvite(null);
+      setInviteChecking(false);
       return;
     }
+    setInviteChecking(true);
     void checkInvite({ data: { token: inviteToken } }).then((result) => {
+      if (cancelled) return;
       setInvite(result);
       if (result.valid) {
         setMode("signup");
@@ -86,7 +91,14 @@ function AuthPage() {
         setMode("signin");
         toast.error(result.reason ?? "This invitation link is not valid.");
       }
+    }).catch(() => {
+      if (cancelled) return;
+      setInvite(null);
+      setOauthError("Could not check your invitation. Please reload this page and try again.");
+    }).finally(() => {
+      if (!cancelled) setInviteChecking(false);
     });
+    return () => { cancelled = true; };
   }, [inviteToken]);
 
 
@@ -126,22 +138,33 @@ function AuthPage() {
   };
 
   const handleGoogle = async () => {
+    if (inviteChecking) return;
     setBusy(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: `${window.location.origin}/auth${inviteToken ? `?invite=${encodeURIComponent(inviteToken)}` : ""}`,
-    });
-    if (result.error) {
-      const msg = String((result.error as { message?: string }).message ?? "");
+    setOauthError(null);
+    try {
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: `${window.location.origin}/auth${inviteToken ? `?invite=${encodeURIComponent(inviteToken)}` : ""}`,
+        extraParams: {
+          prompt: "select_account",
+          ...(invite?.valid && invite.email ? { login_hint: invite.email } : {}),
+        },
+      });
+      if (result.error) throw result.error;
+      if (result.redirected) return;
+      const { data, error } = await supabase.auth.getUser();
+      if (error) throw error;
+      if (!data.user) throw new Error("Google sign-in did not complete. Please try again.");
+      await navigate({ to: "/dashboard" });
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String((error as { message?: string })?.message ?? "");
       setOauthError(
         /invit|database error|42501/i.test(msg)
-          ? "This Google account has not been invited to this Sky Plus workspace. Please contact your administrator."
+          ? "Choose the Google account with the email address on your invitation. If it is a different email, ask Sky Plus for a new invitation."
           : "Google sign-in failed. Please try again.",
       );
+    } finally {
       setBusy(false);
-      return;
     }
-    if (result.redirected) return;
-    navigate({ to: "/dashboard" });
   };
 
   return (
@@ -173,9 +196,12 @@ function AuthPage() {
           )}
           {mode !== "reset" && (
             <>
-              <Button type="button" className="h-12 w-full text-base" onClick={handleGoogle} disabled={busy}>
-                Continue with Google
+              <Button type="button" className="h-12 w-full text-base" onClick={handleGoogle} disabled={busy || inviteChecking}>
+                {inviteChecking ? "Checking invitation…" : "Continue with Google"}
               </Button>
+              {invite?.valid && invite.email && (
+                <p className="break-words text-center text-sm text-muted-foreground">Use your Google account for <strong>{invite.email}</strong>. No password is needed.</p>
+              )}
               <div className="flex items-center gap-3">
                 <span className="h-px flex-1 bg-border" />
                 <span className="stat-label">or use email</span>
