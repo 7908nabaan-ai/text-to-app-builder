@@ -74,7 +74,7 @@ function HistoryList({ isStaff }: { isStaff: boolean }) {
           customer_id: order.customer_id,
           container_type_id: order.container_type_id,
           container_capacity_cbm: order.container_capacity_cbm,
-          notes: `Repeat of $<span className="list-number">{index + 1}.</span> {order.order_number}`,
+          notes: `Repeat of ${order.order_number}`,
         })
         .select("id")
         .single();
@@ -119,7 +119,7 @@ function HistoryList({ isStaff }: { isStaff: boolean }) {
         <Card key={order.id}>
           <CardContent className="flex items-center justify-between gap-3 pt-5">
             <div>
-              <p className="font-medium">{order.order_number}</p>
+              <p className="font-medium"><span className="list-number">{index + 1}.</span> {order.order_number}</p>
               <p className="stat-label">
                 {order.shipped_at ? new Date(order.shipped_at).toLocaleDateString() : "—"}
               </p>
