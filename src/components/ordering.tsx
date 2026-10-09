@@ -62,7 +62,9 @@ export function useFavourites(userId: string) {
 }
 
 export function CurrencySwitch({ className }: { className?: string }) {
-  const { currency, setCurrency } = useCurrency();
+  const { currency, setCurrency, isCustomer } = useCurrency();
+  // Customers see US dollars only, so the switch is hidden for them.
+  if (isCustomer) return null;
   return (
     <div className={cn("inline-flex rounded-md border border-border bg-card p-0.5", className)} role="group" aria-label="Display currency">
       {(["USD", "MYR"] as const).map((c) => (
@@ -83,7 +85,7 @@ export function ProductTile({ product, onAdd, adding, favourite, onFavourite, qu
   onFavourite?: () => void;
   quantity?: number | undefined;
 }) {
-  const { usd, myr } = useCurrency();
+  const { usd, myr, isCustomer } = useCurrency();
   return (
     <div className="relative flex min-w-0 flex-col overflow-hidden rounded-md border border-border bg-card">
       {onFavourite && (
