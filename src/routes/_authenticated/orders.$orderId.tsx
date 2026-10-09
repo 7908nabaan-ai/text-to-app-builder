@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Fragment } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Truck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -79,15 +80,26 @@ export function OrderDetail({ orderId, isStaff }: { orderId: string; isStaff: bo
           <p className="text-xs text-muted-foreground">Your original request, the Sky Plus proposal, your response and the final confirmed quantity — every step is kept.</p>
           <div className="overflow-x-auto rounded-md border border-border bg-card">
             <table className="w-full min-w-180 text-left text-xs">
-              <thead><tr><th scope="col">No.</th><th>Product</th><th>Packing</th><th>Requested</th><th>Sky Plus proposal</th><th>Your response</th><th>Final</th><th>Weight</th><th>Price</th><th>Total</th><th>Status</th></tr></thead>
+              <thead><tr><th scope="col">No.</th><th>Product / Order</th><th>Packing</th><th>Quantity</th><th>Your response</th><th>Final</th><th>Weight</th><th>Price</th><th>Total</th><th>Status</th></tr></thead>
               <tbody>{lines.map((l, index) => {
                 const qty = l.final_quantity ?? l.current_quantity;
                 return (
-                  <tr key={l.id}><td className="tabular-nums">{index + 1}</td>
-                    <td><div className="flex items-center gap-2"><ProductPhoto path={l.image_path} alt={l.product_name} className="h-9 w-9" /><div><p className="font-semibold">{l.product_name}</p><p className="text-muted-foreground">{l.sku}</p></div></div></td>
+                  <Fragment key={l.id}>
+                  <tr aria-label={`Customer request for ${l.product_name}`}><td className="tabular-nums">{index + 1}</td>
+                    <td><div className="flex items-center gap-2"><ProductPhoto path={l.image_path} alt={l.product_name} className="h-9 w-9" /><div><p className="font-semibold">{l.product_name}</p><p className="text-muted-foreground">{l.sku} · Customer order</p></div></div></td>
                     <td>{l.unit}</td>
                     <td>{l.requested_quantity}</td>
-                    <td>{l.proposed_quantity ?? "—"}{Number(l.negotiated_price) !== Number(l.catalog_price) && <span className="block text-primary">{money(Number(l.catalog_price))} → {money(Number(l.negotiated_price))}</span>}</td>
+                    <td>—</td><td>—</td>
+                    <td>{formatKg(Number(l.gross_weight_kg ?? 0) * l.requested_quantity)}</td>
+                    <td>{money(Number(l.catalog_price))}</td>
+                    <td className="font-semibold">{money(Number(l.catalog_price) * l.requested_quantity)}</td>
+                    <td>Requested</td>
+                  </tr>
+                  <tr className="bg-primary/5" aria-label={`Sky Plus proposal for ${l.product_name}`}>
+                    <td></td>
+                    <td><p className="font-semibold text-primary">Sky Plus proposal</p><p className="text-muted-foreground">{l.product_name}</p></td>
+                    <td>{l.unit}</td>
+                    <td>{l.proposed_quantity ?? "—"}</td>
                     <td>{l.current_quantity}</td>
                     <td className="font-semibold">{l.final_quantity ?? "—"}</td>
                     <td>{formatKg(Number(l.gross_weight_kg ?? 0) * qty)}</td>
@@ -95,6 +107,7 @@ export function OrderDetail({ orderId, isStaff }: { orderId: string; isStaff: bo
                     <td className="font-semibold">{money(Number(l.negotiated_price) * qty)}</td>
                     <td><LineStatus line={l} /></td>
                   </tr>
+                  </Fragment>
                 );
               })}</tbody>
             </table>

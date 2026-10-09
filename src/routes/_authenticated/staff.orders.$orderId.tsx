@@ -318,13 +318,25 @@ function OrderBody({ orderId, isOwner }: { orderId: string; isOwner: boolean }) 
 
       {lines.map((line, index) => (
         <Card key={line.id}>
-          <CardContent className="space-y-3 pt-5">
-            <div className="flex items-start justify-between gap-2">
+          <CardContent className="p-0">
+            <div className="space-y-3 border-b border-border p-4" aria-label={`Customer request for ${line.product_name}`}>
               <div>
-                <p className="font-medium"><span className="list-number">{index + 1}.</span> {line.product_name}</p>
-                <p className="stat-label">
-                  {line.sku} · requested {line.requested_quantity}
-                </p>
+                <p className="text-xs font-bold text-muted-foreground">Customer order</p>
+                <p className="mt-1 font-medium"><span className="list-number">{index + 1}.</span> {line.product_name}</p>
+                <p className="stat-label">{line.sku} · {line.unit}</p>
+              </div>
+              <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+                <div><dt className="stat-label">Requested quantity</dt><dd className="font-semibold">{line.requested_quantity}</dd></div>
+                <div><dt className="stat-label">Catalog price</dt><dd className="font-semibold">{formatMoney(line.catalog_price)}</dd></div>
+                <div><dt className="stat-label">CBM</dt><dd className="font-semibold">{formatCbm(line.cbm_per_carton * line.requested_quantity)}</dd></div>
+                <div><dt className="stat-label">Requested total</dt><dd className="font-semibold">{formatMoney(line.catalog_price * line.requested_quantity)}</dd></div>
+              </dl>
+            </div>
+            <div className="space-y-3 bg-primary/5 p-4" aria-label={`Sky Plus proposal for ${line.product_name}`}>
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-primary">Sky Plus proposal</p>
+                <p className="mt-1 text-sm font-medium">{line.product_name}</p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <LineStatus line={line} />
@@ -342,7 +354,7 @@ function OrderBody({ orderId, isOwner }: { orderId: string; isOwner: boolean }) 
             )}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor={`q-${line.id}`}>Quantity</Label>
+                <Label htmlFor={`q-${line.id}`}>Proposed quantity</Label>
                 <Input
                   id={`q-${line.id}`}
                   type="number"
@@ -366,9 +378,9 @@ function OrderBody({ orderId, isOwner }: { orderId: string; isOwner: boolean }) 
               </div>
             </div>
             <p className="text-sm text-muted-foreground">
-              Catalog price {formatMoney(line.catalog_price)} ·{" "}
-              {formatCbm(line.cbm_per_carton * line.current_quantity)}
+              {formatCbm(line.cbm_per_carton * line.current_quantity)} · Total {formatMoney(line.negotiated_price * line.current_quantity)}
             </p>
+            </div>
           </CardContent>
         </Card>
       ))}
