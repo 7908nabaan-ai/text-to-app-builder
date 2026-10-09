@@ -269,23 +269,23 @@ function CatalogBody({ userId }: { userId: string }) {
           description="Sky Plus staff will publish the catalog shortly."
         />
       ) : (
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 2xl:grid-cols-5">
-          {filtered.slice(page * 6, (page + 1) * 6).map((product) => (
-            <Card key={product.id}>
-              <CardContent className="flex h-full flex-col gap-2 p-3">
-                <ProductPhoto path={product.image_path} alt={product.name} className="h-24 w-full rounded-none bg-card" />
-                <p className="line-clamp-2 min-h-9 text-xs font-semibold leading-snug">{product.name}</p>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 min-[900px]:grid-cols-5">
+          {filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE).map((product) => (
+            <Card key={product.id} className="min-w-0 overflow-hidden">
+              <CardContent className="flex min-w-0 flex-1 flex-col gap-1.5 p-2">
+                <ProductPhoto path={product.image_path} alt={product.name} className="h-20 w-full rounded-none bg-muted" />
+                <p className="line-clamp-2 min-h-8 text-[11px] font-semibold leading-snug">{product.name}</p>
                 <p className="truncate text-[10px] text-muted-foreground">{product.sku} · {product.unit}</p>
                 <p className="text-xs font-semibold">{formatMoney(product.default_price)}</p>
                 <p className="text-[10px] text-muted-foreground">{formatCbm(product.cbm_per_carton)} / carton</p>
-                <Button size="sm" className="mt-auto w-full" onClick={() => addLine.mutate(product)} disabled={addLine.isPending}>Add</Button>
+                <Button size="sm" className="mt-auto h-7 w-full px-2 text-[11px]" onClick={() => addLine.mutate(product)} disabled={addLine.isPending}>Add</Button>
               </CardContent>
             </Card>
           ))}
         </div>
       )}
 
-      {filtered.length > 6 && <div className="flex items-center justify-between gap-2 text-xs"><span className="text-muted-foreground">{page * 6 + 1}–{Math.min((page + 1) * 6, filtered.length)} of {filtered.length} products</span><div className="flex gap-2"><Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(page - 1)}>Previous</Button><Button variant="outline" size="sm" disabled={(page + 1) * 6 >= filtered.length} onClick={() => setPage(page + 1)}>Next</Button></div></div>}
+      {filtered.length > PAGE_SIZE && <div className="flex items-center justify-between gap-2 text-xs"><span className="text-muted-foreground">{page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, filtered.length)} of {filtered.length} products</span><div className="flex gap-2"><Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(page - 1)}>Previous</Button><Button variant="outline" size="sm" disabled={(page + 1) * PAGE_SIZE >= filtered.length} onClick={() => setPage(page + 1)}>Next</Button></div></div>}
       <section className="border-t border-border pt-4"><h2 className="mb-3 text-lg font-bold">Current order</h2><CustomerOrder userId={userId} /></section>
       </div>
       <OrderActivity userId={userId} />
