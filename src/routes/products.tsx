@@ -126,9 +126,11 @@ function PublicCatalog() {
                 {p.description && (
                   <p className="mt-1 line-clamp-2 text-[11px] text-muted-foreground">{p.description}</p>
                 )}
-                <div className="mt-auto flex items-end justify-between gap-2 pt-3">
-                  <span className="stat-label truncate">{formatCbm(Number(p.cbm_per_carton))} / {p.unit}</span>
-                  <span className="shrink-0 text-sm font-semibold text-primary">{formatMoney(Number(p.default_price))}</span>
+                <div className="mt-auto pt-3">
+                  <p className="truncate text-[10px] text-muted-foreground">
+                    {formatCbm(Number(p.cbm_per_carton))} / carton · {p.unit}
+                  </p>
+                  <p className="text-sm font-semibold text-primary">{formatMoney(Number(p.default_price))}</p>
                 </div>
               </div>
             ))}
