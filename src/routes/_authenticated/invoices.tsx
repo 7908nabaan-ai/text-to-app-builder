@@ -193,7 +193,7 @@ function InvoiceDetail({
   const qc = useQueryClient();
   const markSent = async () => {
     const { error } = await supabase.from("invoices").update({ sent_at: new Date().toISOString() }).eq("id", invoice.id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Invoice marked as sent");
     void qc.invalidateQueries({ queryKey: ["invoices"] });
   };
