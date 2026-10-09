@@ -156,8 +156,8 @@ export function LiveOrderPanel({ order, lines, children, sticky = true }: { orde
       <div className="space-y-1.5 border-t border-border pt-3">
         {row("Total cartons", String(t.totalCartons))}
         {row("Total products", String(t.totalProducts))}
-        {row("USD total", usd(t.totalValue), true)}
-        {row("MYR total", myr(t.totalValue), true)}
+        {row(isCustomer ? "Total" : "USD total", usd(t.totalValue), true)}
+        {!isCustomer && row("MYR total", myr(t.totalValue), true)}
       </div>
       {(t.isOverCapacity || t.isOverWeight || t.cbmNearLimit || t.weightNearLimit) && (
         <p className={cn("flex gap-2 rounded-md p-2 text-xs", t.isOverCapacity || t.isOverWeight ? "bg-destructive/10 text-destructive" : "bg-gold/15 text-foreground")}>
