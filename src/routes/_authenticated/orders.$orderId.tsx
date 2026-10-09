@@ -54,7 +54,7 @@ export function OrderDetail({ orderId, isStaff }: { orderId: string; isStaff: bo
   });
   if (isLoading) return null;
   if (!order) return <EmptyState title="Order not found" description="It may belong to another account." />;
-  const editable = !isStaff && (order.status === "draft" || order.status === "awaiting_customer");
+  const editable = !isStaff && !order.is_locked && ["draft", "submitted", "under_review", "awaiting_customer", "customer_updated"].includes(order.status);
   const done = order.status === "shipped" || order.status === "completed";
 
   return (
@@ -63,7 +63,7 @@ export function OrderDetail({ orderId, isStaff }: { orderId: string; isStaff: bo
         <div className="flex flex-wrap items-center gap-3 rounded-md border border-border bg-card p-4">
           <div className="min-w-0"><p className="font-display text-xl font-bold">{order.order_number}</p><p className="text-sm text-muted-foreground">{order.container_name ?? "Container"} · created {new Date(order.created_at).toLocaleDateString()}</p></div>
           <Badge className="ml-auto">{STATUS_LABELS[order.status] ?? order.status}</Badge>
-          {editable && <Button asChild size="sm"><Link to="/catalog" search={{ order: order.id }}>{order.status === "draft" ? "Continue ordering" : "Respond to proposal"}</Link></Button>}
+          {editable && <Button asChild size="sm"><Link to="/catalog" search={{ order: order.id }}>{order.status === "draft" ? "Continue ordering" : "Edit order"}</Link></Button>}
           {isStaff && <Button asChild size="sm" variant="outline"><Link to="/staff/orders/$orderId" params={{ orderId: order.id }}>Open staff review</Link></Button>}
           {!isStaff && <CustomerApproval order={order} disabled={lines.length === 0} />}
         </div>
@@ -79,36 +79,37 @@ export function OrderDetail({ orderId, isStaff }: { orderId: string; isStaff: bo
 
         <section className="space-y-2">
           <h2 className="font-display text-lg font-bold">{done ? "Final products" : "Negotiation"}</h2>
-          <p className="text-xs text-muted-foreground">Your original request, the Sky Plus proposal, your response and the final confirmed quantity — every step is kept.</p>
+          <p className="text-xs text-muted-foreground">Each item shows your order; a Sky Plus proposal appears just below it only when Sky Plus suggests a change.</p>
           <div className="max-h-[65vh] overflow-auto rounded-md border border-border bg-card">
             <table className="w-full min-w-180 text-left text-xs">
-              <thead className="sticky top-0 z-10 bg-card"><tr><th scope="col">No.</th><th>Product / Order</th><th>Packing</th><th>Quantity</th><th>Your response</th><th>Final</th><th>Weight</th><th>Price</th><th>Total</th><th>Status</th></tr></thead>
+              <thead className="sticky top-0 z-10 bg-card"><tr><th scope="col">No.</th><th>Item No.</th><th>Product</th><th>Packing</th><th>Quantity</th><th>Final</th><th>Weight</th><th>Price</th><th>Total</th><th>Status</th></tr></thead>
               <tbody>{lines.map((l, index) => {
                 const qty = l.final_quantity ?? l.current_quantity;
+                const proposed = l.current_quantity !== l.requested_quantity || Number(l.negotiated_price) !== Number(l.catalog_price) || (l.availability ?? "available") !== "available";
                 return (
                   <Fragment key={l.id}>
                   <tr aria-label={`Customer request for ${l.product_name}`}><td className="tabular-nums">{index + 1}</td>
-                    <td><div className="flex items-center gap-2"><ProductPhoto path={l.image_path} alt={l.product_name} className="h-9 w-9" /><div><p className="font-semibold">{l.product_name}</p><p className="text-muted-foreground">{l.sku} · Customer order</p></div></div></td>
+                    <td className="whitespace-nowrap font-semibold">{l.sku}</td>
+                    <td><div className="flex items-center gap-2"><ProductPhoto path={l.image_path} alt={l.product_name} className="h-7 w-7" /><p className="truncate font-semibold">{l.product_name}</p></div></td>
                     <td>{l.unit}</td>
                     <td>{l.requested_quantity}</td>
-                    <td>—</td><td>—</td>
+                    <td>{proposed ? "—" : (l.final_quantity ?? "—")}</td>
                     <td>{formatKg(Number(l.gross_weight_kg ?? 0) * l.requested_quantity)}</td>
                     <td>{money(Number(l.catalog_price))}</td>
                     <td className="font-semibold">{money(Number(l.catalog_price) * l.requested_quantity)}</td>
-                    <td>Requested</td>
+                    <td>{proposed ? "Requested" : <LineStatus line={l} />}</td>
                   </tr>
-                  <tr className="bg-primary/5" aria-label={`Sky Plus proposal for ${l.product_name}`}>
-                    <td></td>
-                    <td><p className="font-semibold text-primary">Sky Plus proposal</p><p className="text-muted-foreground">{l.product_name}</p></td>
+                  {proposed && <tr className="bg-primary/5" aria-label={`Sky Plus proposal for ${l.product_name}`}>
+                    <td></td><td></td>
+                    <td><p className="font-semibold text-primary">Sky Plus proposal{l.availability && l.availability !== "available" ? ` · ${l.availability === "preorder" ? "Pre-order" : "Unavailable"}` : ""}</p></td>
                     <td>{l.unit}</td>
-                    <td>{l.proposed_quantity ?? "—"}</td>
                     <td>{l.current_quantity}</td>
                     <td className="font-semibold">{l.final_quantity ?? "—"}</td>
                     <td>{formatKg(Number(l.gross_weight_kg ?? 0) * qty)}</td>
                     <td>{money(Number(l.negotiated_price))}</td>
                     <td className="font-semibold">{money(Number(l.negotiated_price) * qty)}</td>
                     <td><LineStatus line={l} /></td>
-                  </tr>
+                  </tr>}
                   </Fragment>
                 );
               })}</tbody>
