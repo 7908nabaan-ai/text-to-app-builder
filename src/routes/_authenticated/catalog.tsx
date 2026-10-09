@@ -32,6 +32,8 @@ export const Route = createFileRoute("/_authenticated/catalog")({
   component: CatalogPage,
 });
 
+const PAGE_SIZE = 10;
+
 function CatalogPage() {
   return (
     <Page title="Product catalogue">
