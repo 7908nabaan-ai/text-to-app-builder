@@ -1,6 +1,7 @@
 import { useEffect, useSyncExternalStore } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
 
 /**
  * Display-currency switch. Stored prices are always USD; switching to MYR
@@ -35,7 +36,10 @@ const fmt = (amount: number, currency: DisplayCurrency) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency, maximumFractionDigits: 2 }).format(amount);
 
 export function useCurrency() {
-  const currency = useSyncExternalStore(subscribe, () => current, () => "USD" as DisplayCurrency);
+  const { role } = useAuth();
+  const raw = useSyncExternalStore(subscribe, () => current, () => "USD" as DisplayCurrency);
+  // Customers always see US dollars; only staff can switch the display to MYR.
+  const currency: DisplayCurrency = role === "customer" ? "USD" : raw;
   useEffect(() => {
     const saved = window.localStorage.getItem(KEY);
     if ((saved === "USD" || saved === "MYR") && saved !== current) setDisplayCurrency(saved);
@@ -44,7 +48,8 @@ export function useCurrency() {
   return {
     currency,
     rate,
-    setCurrency: setDisplayCurrency,
+    isCustomer: role === "customer",
+    setCurrency: role === "customer" ? () => undefined : setDisplayCurrency,
     /** Format a stored USD amount in the selected display currency. */
     money: (usd: number) => fmt(currency === "MYR" ? usd * rate : usd, currency),
     usd: (usd: number) => fmt(usd, "USD"),
