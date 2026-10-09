@@ -14,10 +14,21 @@ export function downloadExcel(filename: string, sheets: ExportTable[]) {
   XLSX.writeFile(wb, filename);
 }
 
-export function downloadPdf(
-  filename: string,
-  opts: { title: string; subtitle?: string[]; tables: ExportTable[]; footer?: string[] },
-) {
+export type PdfOptions = { title: string; subtitle?: string[]; tables: ExportTable[]; footer?: string[] };
+
+export function downloadPdf(filename: string, opts: PdfOptions) {
+  buildPdf(opts).save(filename);
+}
+
+/** Opens the same document in the browser's print dialog. */
+export function printPdf(opts: PdfOptions) {
+  const doc = buildPdf(opts);
+  doc.autoPrint();
+  const url = doc.output("bloburl");
+  window.open(String(url), "_blank");
+}
+
+function buildPdf(opts: PdfOptions) {
   const doc = new jsPDF();
   doc.setFontSize(18);
   doc.text("SKY PLUS", 14, 18);
@@ -54,5 +65,5 @@ export function downloadPdf(
     doc.text(wrapped, 14, y);
     y += wrapped.length * 5 + 2;
   }
-  doc.save(filename);
+  return doc;
 }
