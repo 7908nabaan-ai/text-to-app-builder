@@ -22,3 +22,4 @@
 - [x] Verify the updated appearance and navigation
 - [x] Add Food / Non-Food main categories with departments and subcategories (per uploaded catalog structure)
 - [x] Show and copy the invitation link right after it is created
+- [x] Arrange catalogue items as compact tiles, 5 in a row

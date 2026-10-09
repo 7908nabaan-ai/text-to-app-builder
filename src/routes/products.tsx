@@ -118,17 +118,19 @@ function PublicCatalog() {
         ) : shown.length === 0 ? (
           <p className="mt-8 text-muted-foreground">No products to show yet.</p>
         ) : (
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
             {shown.map((p) => (
-              <div key={p.id} className="flex flex-col rounded-lg border border-border bg-card p-5">
-                <Badge variant="secondary" className="w-fit">{p.sku}</Badge>
-                <h2 className="mt-3 font-display text-lg font-semibold">{p.name}</h2>
+              <div key={p.id} className="flex min-w-0 flex-col rounded-md border border-border bg-card p-3">
+                <Badge variant="secondary" className="w-fit px-1.5 py-0 text-[10px]">{p.sku}</Badge>
+                <h2 className="mt-2 line-clamp-2 min-h-9 text-sm font-semibold">{p.name}</h2>
                 {p.description && (
-                  <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{p.description}</p>
+                  <p className="mt-1 line-clamp-2 text-[11px] text-muted-foreground">{p.description}</p>
                 )}
-                <div className="mt-auto flex items-end justify-between pt-4">
-                  <span className="stat-label">{formatCbm(Number(p.cbm_per_carton))} / {p.unit}</span>
-                  <span className="font-semibold text-primary">{formatMoney(Number(p.default_price))}</span>
+                <div className="mt-auto pt-3">
+                  <p className="truncate text-[10px] text-muted-foreground">
+                    {formatCbm(Number(p.cbm_per_carton))} / carton · {p.unit}
+                  </p>
+                  <p className="text-sm font-semibold text-primary">{formatMoney(Number(p.default_price))}</p>
                 </div>
               </div>
             ))}
