@@ -12,6 +12,7 @@ import { ProductPhoto } from "@/components/product-photo";
 import { formatCbm, formatKg } from "@/lib/calc";
 import { useCurrency } from "@/lib/currency";
 import { STATUS_LABELS, addProductToOrder, createOrder, logOrderEvent, type OrderLine } from "@/lib/orders";
+import { BottomTotals, LineStatus, OrderSidePanels } from "@/components/order-panels";
 import { LiveOrderPanel, ProductTile, useCatalogProducts, useFavourites, type CatalogProduct } from "@/components/ordering";
 import { cn } from "@/lib/utils";
 
@@ -227,32 +228,6 @@ export function QuickOrder({ userId, orderId, onSelectOrder }: { userId: string;
           {q && matches.length === 0 && <p className="mt-2 text-sm text-muted-foreground">No products match “{term}”.</p>}
         </div>
 
-        <section className="space-y-2">
-          <h2 className="font-display text-lg font-bold">Your order lines</h2>
-          {lines.length === 0 ? <EmptyState title="No products yet" description="Search above or pick from the lists below." /> : (
-            <div className="overflow-x-auto rounded-md border border-border bg-card">
-              <table className="w-full min-w-160 text-left text-xs">
-                <thead><tr><th>Product</th><th>Packing</th><th>Cartons</th><th>CBM</th><th>Weight</th><th>Unit price</th><th>Total</th><th /></tr></thead>
-                <tbody>{lines.map((l) => (
-                  <tr key={l.id}>
-                    <td><div className="flex items-center gap-2"><ProductPhoto path={l.image_path} alt={l.product_name} className="h-10 w-10" /><div className="min-w-28"><p className="font-semibold">{l.product_name}</p><p className="text-muted-foreground">{l.sku}</p></div></div></td>
-                    <td>{l.unit}</td>
-                    <td><div className="flex items-center gap-1">
-                      <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => setQty.mutate({ line: l, quantity: l.current_quantity - 1 })} aria-label={`Decrease ${l.product_name}`}><Minus /></Button>
-                      <Input type="number" min={0} aria-label={`Cartons of ${l.product_name}`} className="h-7 w-16 px-1 text-center text-xs" key={`${l.id}-${l.current_quantity}`} defaultValue={l.current_quantity} onBlur={(e) => { const n = Math.max(0, Math.floor(Number(e.target.value) || 0)); if (n !== l.current_quantity) setQty.mutate({ line: l, quantity: n }); }} />
-                      <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => setQty.mutate({ line: l, quantity: l.current_quantity + 1 })} aria-label={`Increase ${l.product_name}`}><Plus /></Button>
-                    </div></td>
-                    <td>{(Number(l.cbm_per_carton) * l.current_quantity).toFixed(3)}</td>
-                    <td>{formatKg(Number(l.gross_weight_kg ?? 0) * l.current_quantity)}</td>
-                    <td>{money(Number(l.negotiated_price))}</td>
-                    <td className="font-semibold">{money(Number(l.negotiated_price) * l.current_quantity)}</td>
-                    <td><Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => setQty.mutate({ line: l, quantity: 0 })} aria-label={`Remove ${l.product_name}`}><Trash2 /></Button></td>
-                  </tr>
-                ))}</tbody>
-              </table>
-            </div>
-          )}
-        </section>
 
         <section className="space-y-3">
           <div className="flex flex-wrap gap-2">
@@ -286,14 +261,44 @@ export function QuickOrder({ userId, orderId, onSelectOrder }: { userId: string;
             </div>
           )}
         </section>
+        <section className="space-y-2">
+          <h2 className="font-display text-lg font-bold">Current order</h2>
+          {lines.length === 0 ? <EmptyState title="No products yet" description="Search above or pick from the lists below." /> : (
+            <div className="overflow-x-auto rounded-md border border-border bg-card">
+              <table className="w-full min-w-160 text-left text-xs">
+                <thead><tr><th>Product</th><th>Packing</th><th>Cartons</th><th>CBM</th><th>Weight</th><th>Unit price</th><th>Total</th><th>Status</th><th /></tr></thead>
+                <tbody>{lines.map((l) => (
+                  <tr key={l.id}>
+                    <td><div className="flex items-center gap-2"><ProductPhoto path={l.image_path} alt={l.product_name} className="h-10 w-10" /><div className="min-w-28"><p className="font-semibold">{l.product_name}</p><p className="text-muted-foreground">{l.sku}</p></div></div></td>
+                    <td>{l.unit}</td>
+                    <td><div className="flex items-center gap-1">
+                      <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => setQty.mutate({ line: l, quantity: l.current_quantity - 1 })} aria-label={`Decrease ${l.product_name}`}><Minus /></Button>
+                      <Input type="number" min={0} aria-label={`Cartons of ${l.product_name}`} className="h-7 w-16 px-1 text-center text-xs" key={`${l.id}-${l.current_quantity}`} defaultValue={l.current_quantity} onBlur={(e) => { const n = Math.max(0, Math.floor(Number(e.target.value) || 0)); if (n !== l.current_quantity) setQty.mutate({ line: l, quantity: n }); }} />
+                      <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => setQty.mutate({ line: l, quantity: l.current_quantity + 1 })} aria-label={`Increase ${l.product_name}`}><Plus /></Button>
+                    </div></td>
+                    <td>{(Number(l.cbm_per_carton) * l.current_quantity).toFixed(3)}</td>
+                    <td>{formatKg(Number(l.gross_weight_kg ?? 0) * l.current_quantity)}</td>
+                    <td>{money(Number(l.negotiated_price))}</td>
+                    <td className="font-semibold">{money(Number(l.negotiated_price) * l.current_quantity)}</td>
+                    <td><LineStatus line={l} /></td>
+                    <td><Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => setQty.mutate({ line: l, quantity: 0 })} aria-label={`Remove ${l.product_name}`}><Trash2 /></Button></td>
+                  </tr>
+                ))}</tbody>
+              </table>
+            </div>
+          )}
+        </section>
         <BottomTotals order={order} lines={lines} />
       </div>
 
-      <LiveOrderPanel order={order} lines={lines}>
-        <Button className={cn("h-11 w-full")} disabled={lines.length === 0 || submit.isPending} onClick={() => submit.mutate()}>
-          {order.status === "draft" ? "Submit order" : "Send my response"}
-        </Button>
-      </LiveOrderPanel>
+      <div className="space-y-4 xl:sticky xl:top-20 xl:max-h-[calc(100vh-6rem)] xl:overflow-y-auto">
+        <LiveOrderPanel order={order} lines={lines} sticky={false}>
+          <Button className={cn("h-11 w-full")} disabled={lines.length === 0 || submit.isPending} onClick={() => submit.mutate()}>
+            {order.status === "draft" ? "Submit order" : "Send my response"}
+          </Button>
+        </LiveOrderPanel>
+        <OrderSidePanels order={order} />
+      </div>
     </div>
   );
 }

@@ -124,14 +124,14 @@ export function orderLoad(order: PanelOrder, lines: PanelLine[]) {
 }
 
 /** Always-visible container summary; updates as soon as the order lines change. */
-export function LiveOrderPanel({ order, lines, children }: { order: PanelOrder; lines: PanelLine[]; children?: React.ReactNode }) {
+export function LiveOrderPanel({ order, lines, children, sticky = true }: { order: PanelOrder; lines: PanelLine[]; children?: React.ReactNode; sticky?: boolean }) {
   const { usd, myr } = useCurrency();
   const t = orderLoad(order, lines);
   const row = (label: string, value: string, strong = false) => (
     <div className="flex justify-between gap-2 text-xs"><span className="text-muted-foreground">{label}</span><span className={strong ? "font-bold" : "font-semibold"}>{value}</span></div>
   );
   return (
-    <aside className="space-y-3 rounded-md border border-border bg-card p-4 xl:sticky xl:top-20" aria-label="Live order summary">
+    <aside className={cn("space-y-3 rounded-md border border-border bg-card p-4", sticky && "xl:sticky xl:top-20")} aria-label="Live order summary">
       <div className="flex items-start justify-between gap-2">
         <div><p className="stat-label">Order {order.order_number}</p><p className="font-display text-lg font-bold">{order.container_name ?? "Container"}</p></div>
         <CurrencySwitch />
