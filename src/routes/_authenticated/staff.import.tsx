@@ -48,7 +48,7 @@ type Row = {
   exists: boolean;
 };
 
-const HEAD = ["sku", "name", "category", "length_cm", "width_cm", "height_cm", "cbm_per_carton", "price", "unit", "description", "image"];
+const HEAD = ["sku", "name", "category", "length_cm", "width_cm", "height_cm", "cbm_per_carton", "gross_weight_kg", "price", "unit", "description", "image"];
 
 function ImportPage() {
   return (
@@ -97,7 +97,7 @@ async function buildRows(norm: Record<string, unknown>[], images: Map<string, Bl
         if (exists) warnings.push("Will update existing product");
         return {
           line: i + 2, sku, name, category: String(r["category"] ?? "").trim(),
-          cbm: cbm ?? 0, price: price ?? 0, unit: String(r["unit"] ?? "").trim() || "Carton",
+          cbm: cbm ?? 0, weight: num(r["gross_weight_kg"] ?? r["weight"]), price: price ?? 0, unit: String(r["unit"] ?? "").trim() || "Carton",
           description: String(r["description"] ?? "").trim(), length, width, height,
           imageName, image, errors, warnings, exists,
         };
@@ -237,7 +237,7 @@ function ImportBody() {
         }
         payload.push({
           sku: r["sku"], name: r["name"], category_id: r["category"] ? catMap.get(r["category"].toLowerCase()) ?? null : null,
-          cbm_per_carton: r["cbm"], default_price: r["price"], unit: r["unit"], description: r["description"] || null,
+          cbm_per_carton: r["cbm"], ...(r.weight != null ? { gross_weight_kg: r.weight } : {}), default_price: r["price"], unit: r["unit"], description: r["description"] || null,
           carton_length: r.length, carton_width: r.width, carton_height: r.height,
           ...(image_path ? { image_path } : {}),
         });
@@ -267,7 +267,7 @@ function ImportBody() {
       <Card>
         <CardContent className="space-y-3 pt-5">
           <p className="text-sm text-muted-foreground">
-            Columns: sku, name, category, length_cm, width_cm, height_cm, cbm_per_carton, price, unit, description, image
+            Columns: sku, name, category, length_cm, width_cm, height_cm, cbm_per_carton, gross_weight_kg, price, unit, description, image
             (photo file name inside the ZIP). Volume is worked out from the size when left empty.
           </p>
           <div className="flex flex-wrap gap-2">
