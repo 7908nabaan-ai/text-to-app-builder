@@ -124,7 +124,7 @@ export async function createOrder(customerId: string, containerTypeId: string) {
 export async function getDraftOrder(customerId: string) {
   const { data, error } = await supabase
     .from("orders").select("*").eq("customer_id", customerId)
-    .in("status", ["draft", "awaiting_customer"])
+    .in("status", ["draft", "submitted", "under_review", "awaiting_customer", "customer_updated"]).eq("is_locked", false)
     .order("created_at", { ascending: false }).limit(1).maybeSingle();
   if (error) throw error;
   return data;

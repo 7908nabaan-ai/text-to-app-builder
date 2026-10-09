@@ -88,7 +88,7 @@ export function QuickOrder({ userId, orderId, onSelectOrder }: { userId: string;
   const { data: openOrders = [], isLoading } = useQuery({
     queryKey: ["customer-orders", userId, "editable"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("orders").select("*").eq("customer_id", userId).in("status", ["draft", "awaiting_customer"]).order("created_at", { ascending: false });
+      const { data, error } = await supabase.from("orders").select("*").eq("customer_id", userId).in("status", ["draft", "submitted", "under_review", "awaiting_customer", "customer_updated"]).eq("is_locked", false).order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },

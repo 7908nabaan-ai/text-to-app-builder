@@ -132,7 +132,7 @@ export function CustomerOrder({ userId }: { userId: string }) {
     })),
     Number(order.container_capacity_cbm),
   );
-  const editable = order.status === "draft" || order.status === "awaiting_customer";
+  const editable = !order.is_locked && ["draft", "submitted", "under_review", "awaiting_customer", "customer_updated"].includes(order.status);
 
   return (
     <div className="space-y-4">
