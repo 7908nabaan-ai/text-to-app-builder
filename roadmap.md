@@ -40,3 +40,13 @@
 - [ ] Larger product images with packing, CBM, weight, USD + MYR price
 - [ ] Ordering page 3-column: catalogue + categories + current order center; summary, status timeline, negotiation chat, recent changes right
 - [ ] Line status colours (available / updated by Sky Plus / pre-order / unavailable) + bottom totals bar
+
+## Status after ordering pass
+- [x] Separate customer / staff menus
+- [x] Container choice before ordering, quick order, live CBM/weight panel, USD/MYR switch
+- [x] Order detail with negotiation chat, status timeline, line availability colours
+- [x] Staff: orders grouped by stage, availability + container change, container/weight/MYR settings, product weight
+- [ ] Customer Workspace tabs (staff)
+- [ ] Read-only History module + comprehensive Reports with print
+- [ ] Owner dashboard metrics
+- [ ] Invoice PI/CI split with sent/paid status + print
