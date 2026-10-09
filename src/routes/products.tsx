@@ -118,7 +118,7 @@ function PublicCatalog() {
         ) : shown.length === 0 ? (
           <p className="mt-8 text-muted-foreground">No products to show yet.</p>
         ) : (
-          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 min-[900px]:grid-cols-5">
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
             {shown.map((p) => (
               <div key={p.id} className="flex min-w-0 flex-col rounded-md border border-border bg-card p-3">
                 <Badge variant="secondary" className="w-fit px-1.5 py-0 text-[10px]">{p.sku}</Badge>

@@ -271,7 +271,7 @@ function CatalogBody({ userId }: { userId: string }) {
           description="Sky Plus staff will publish the catalog shortly."
         />
       ) : (
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 min-[900px]:grid-cols-5">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5">
           {filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE).map((product) => (
             <Card key={product.id} className="min-w-0 gap-0 overflow-hidden border-border bg-card p-0 shadow-none">
               <CardContent className="flex min-w-0 flex-1 flex-col gap-1.5 p-2">
