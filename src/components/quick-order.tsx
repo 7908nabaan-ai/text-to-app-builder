@@ -326,7 +326,7 @@ export function QuickOrder({ userId, orderId, onSelectOrder }: { userId: string;
       </div>
 
       <div className="space-y-4 xl:sticky xl:top-20 xl:max-h-[calc(100vh-6rem)] xl:overflow-y-auto">
-        <OrderHeaderCard order={order} statusLabel={STATUS_LABELS[order.status]} />
+        <OrderHeaderCard order={order} statusLabel={STATUS_LABELS[order.status] ?? order.status} />
         <NegotiationChat orderId={order.id} compact />
         <RecentChanges orderId={order.id} />
         <LiveOrderPanel order={order} lines={lines} sticky={false} />
