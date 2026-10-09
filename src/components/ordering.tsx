@@ -62,7 +62,9 @@ export function useFavourites(userId: string) {
 }
 
 export function CurrencySwitch({ className }: { className?: string }) {
-  const { currency, setCurrency } = useCurrency();
+  const { currency, setCurrency, isCustomer } = useCurrency();
+  // Customers see US dollars only, so the switch is hidden for them.
+  if (isCustomer) return null;
   return (
     <div className={cn("inline-flex rounded-md border border-border bg-card p-0.5", className)} role="group" aria-label="Display currency">
       {(["USD", "MYR"] as const).map((c) => (
@@ -83,7 +85,7 @@ export function ProductTile({ product, onAdd, adding, favourite, onFavourite, qu
   onFavourite?: () => void;
   quantity?: number | undefined;
 }) {
-  const { usd, myr } = useCurrency();
+  const { usd, myr, isCustomer } = useCurrency();
   return (
     <div className="relative flex min-w-0 flex-col overflow-hidden rounded-md border border-border bg-card">
       {onFavourite && (
@@ -97,7 +99,7 @@ export function ProductTile({ product, onAdd, adding, favourite, onFavourite, qu
         <p className="truncate text-[10px] text-muted-foreground">{product.sku} · {product.unit}</p>
         <p className="text-[10px] text-muted-foreground">{formatCbm(Number(product.cbm_per_carton))} · {product.gross_weight_kg ? formatKg(Number(product.gross_weight_kg)) : "weight —"}</p>
         <p className="text-sm font-bold">{usd(Number(product.default_price))}</p>
-        <p className="-mt-1 text-[10px] text-muted-foreground">{myr(Number(product.default_price))}</p>
+        {!isCustomer && <p className="-mt-1 text-[10px] text-muted-foreground">{myr(Number(product.default_price))}</p>}
         {onAdd && (
           <Button size="sm" className="mt-auto h-8 w-full text-xs" onClick={onAdd} disabled={adding}>
             <Plus className="h-3.5 w-3.5" />{quantity ? `Add (${quantity} in order)` : "Add"}
@@ -126,7 +128,7 @@ export function orderLoad(order: PanelOrder, lines: PanelLine[]) {
 
 /** Always-visible container summary; updates as soon as the order lines change. */
 export function LiveOrderPanel({ order, lines, children, sticky = true }: { order: PanelOrder; lines: PanelLine[]; children?: React.ReactNode; sticky?: boolean }) {
-  const { usd, myr } = useCurrency();
+  const { usd, myr, isCustomer } = useCurrency();
   const t = orderLoad(order, lines);
   const row = (label: string, value: string, strong = false) => (
     <div className="flex justify-between gap-2 text-xs"><span className="text-muted-foreground">{label}</span><span className={strong ? "font-bold" : "font-semibold"}>{value}</span></div>
@@ -154,8 +156,8 @@ export function LiveOrderPanel({ order, lines, children, sticky = true }: { orde
       <div className="space-y-1.5 border-t border-border pt-3">
         {row("Total cartons", String(t.totalCartons))}
         {row("Total products", String(t.totalProducts))}
-        {row("USD total", usd(t.totalValue), true)}
-        {row("MYR total", myr(t.totalValue), true)}
+        {row(isCustomer ? "Total" : "USD total", usd(t.totalValue), true)}
+        {!isCustomer && row("MYR total", myr(t.totalValue), true)}
       </div>
       {(t.isOverCapacity || t.isOverWeight || t.cbmNearLimit || t.weightNearLimit) && (
         <p className={cn("flex gap-2 rounded-md p-2 text-xs", t.isOverCapacity || t.isOverWeight ? "bg-destructive/10 text-destructive" : "bg-gold/15 text-foreground")}>

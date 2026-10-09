@@ -194,8 +194,11 @@ function InvoiceDetail({
   const markSent = async () => {
     const { error } = await supabase.from("invoices").update({ sent_at: new Date().toISOString() }).eq("id", invoice.id);
     if (error) { toast.error(error.message); return; }
-    toast.success("Invoice marked as sent");
+    toast.success("Invoice marked as sent — order status updated");
     void qc.invalidateQueries({ queryKey: ["invoices"] });
+    void qc.invalidateQueries({ queryKey: ["order", invoice.order_id] });
+    void qc.invalidateQueries({ queryKey: ["orders"] });
+    void qc.invalidateQueries({ queryKey: ["order-invoices", invoice.order_id] });
   };
   const exportPdf = async () => downloadPdf(`${invoice.invoice_number}-v${invoice.version}.pdf`, await pdfOptions());
   const printInvoice = async () => printPdf(await pdfOptions());
@@ -230,7 +233,7 @@ function InvoiceDetail({
           <Button size="sm" onClick={() => void markSent()}>Mark as sent</Button>
         )}
         <Button size="sm" variant="outline" asChild>
-          <Link to="/orders/$orderId" params={{ orderId: invoice.order_id }}>View order</Link>
+          <Link to={isStaff ? "/staff/orders/$orderId" : "/orders/$orderId"} params={{ orderId: invoice.order_id }}>View order</Link>
         </Button>
       </div>
       <p className="text-sm text-muted-foreground">

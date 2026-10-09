@@ -118,7 +118,7 @@ export function OrderDetail({ orderId, isStaff }: { orderId: string; isStaff: bo
           <BottomTotals order={order} lines={lines} />
         </section>
 
-        <OrderFinance orderId={order.id} customerId={order.customer_id} isStaff={isStaff} />
+        <OrderFinance orderId={order.id} customerId={order.customer_id} isStaff={isStaff} orderStatus={order.status} />
       </div>
       <div className="space-y-4 xl:sticky xl:top-20 xl:max-h-[calc(100vh-6rem)] xl:overflow-y-auto">
         <LiveOrderPanel order={order} lines={lines} sticky={false} />

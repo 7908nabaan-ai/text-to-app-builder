@@ -27,16 +27,16 @@ export function LineStatus({ line }: { line: StatusLine }) {
 }
 
 export function BottomTotals({ order, lines }: { order: PanelOrder; lines: PanelLine[] }) {
-  const { usd, myr } = useCurrency();
+  const { usd, myr, isCustomer } = useCurrency();
   const t = orderLoad(order, lines);
   const cell = (label: string, value: string) => <div className="min-w-0"><p className="stat-label">{label}</p><p className="truncate font-bold">{value}</p></div>;
   return (
-    <div className="sticky bottom-0 z-10 grid grid-cols-2 gap-3 rounded-md border border-border bg-card p-3 shadow-md sm:grid-cols-5">
+    <div className={cn("sticky bottom-0 z-10 grid grid-cols-2 gap-3 rounded-md border border-border bg-card p-3 shadow-md", isCustomer ? "sm:grid-cols-4" : "sm:grid-cols-5")}>
       {cell("Total cartons", String(t.totalCartons))}
       {cell("Total CBM", formatCbm(t.totalCbm))}
       {cell("Gross weight", formatKg(t.totalWeightKg))}
-      {cell("USD total", usd(t.totalValue))}
-      {cell("MYR total", myr(t.totalValue))}
+      {cell(isCustomer ? "Total" : "USD total", usd(t.totalValue))}
+      {!isCustomer && cell("MYR total", myr(t.totalValue))}
     </div>
   );
 }

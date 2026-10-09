@@ -406,7 +406,7 @@ function OrderBody({ orderId, isOwner }: { orderId: string; isOwner: boolean }) 
       <BottomTotals order={order} lines={lines} />
       </section>
 
-      <OrderFinance orderId={orderId} customerId={order.customer_id} isStaff />
+      <OrderFinance orderId={orderId} customerId={order.customer_id} isStaff orderStatus={order.status} />
 
 
       <Card>
