@@ -1,5 +1,8 @@
 # Sky Plus roadmap
 
+- [ ] Verify invitation Google sign-in while preserving customer records
+- [ ] Check invitation sign-in on desktop, tablet and phone previews
+
 - [x] Number displayed business lists and verify numbering without changing actions (catalogue checked on desktop/mobile; app checks pass)
 
 - [x] Promote skynaeem1010@gmail.com to staff role
