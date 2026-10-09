@@ -21,6 +21,7 @@ export type Database = {
           contact_email: string | null
           currency: string
           id: boolean
+          myr_rate: number
           payment_instructions: string | null
           updated_at: string
           viber_number: string | null
@@ -32,6 +33,7 @@ export type Database = {
           contact_email?: string | null
           currency?: string
           id?: boolean
+          myr_rate?: number
           payment_instructions?: string | null
           updated_at?: string
           viber_number?: string | null
@@ -43,6 +45,7 @@ export type Database = {
           contact_email?: string | null
           currency?: string
           id?: boolean
+          myr_rate?: number
           payment_instructions?: string | null
           updated_at?: string
           viber_number?: string | null
@@ -128,8 +131,11 @@ export type Database = {
           created_at: string
           id: string
           is_active: boolean
+          max_weight_kg: number
           name: string
+          sort_order: number
           updated_at: string
+          warning_percent: number
         }
         Insert: {
           capacity_cbm: number
@@ -137,8 +143,11 @@ export type Database = {
           created_at?: string
           id?: string
           is_active?: boolean
+          max_weight_kg?: number
           name: string
+          sort_order?: number
           updated_at?: string
+          warning_percent?: number
         }
         Update: {
           capacity_cbm?: number
@@ -146,8 +155,11 @@ export type Database = {
           created_at?: string
           id?: string
           is_active?: boolean
+          max_weight_kg?: number
           name?: string
+          sort_order?: number
           updated_at?: string
+          warning_percent?: number
         }
         Relationships: []
       }
@@ -195,6 +207,32 @@ export type Database = {
           token?: string
         }
         Relationships: []
+      }
+      favourite_products: {
+        Row: {
+          created_at: string
+          product_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          product_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          product_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favourite_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       invoice_lines: {
         Row: {
@@ -262,6 +300,7 @@ export type Database = {
           order_id: string
           payment_instructions: string | null
           product_value: number | null
+          sent_at: string | null
           state: Database["public"]["Enums"]["invoice_state"]
           total_cbm: number
           total_value: number
@@ -285,6 +324,7 @@ export type Database = {
           order_id: string
           payment_instructions?: string | null
           product_value?: number | null
+          sent_at?: string | null
           state?: Database["public"]["Enums"]["invoice_state"]
           total_cbm?: number
           total_value?: number
@@ -308,6 +348,7 @@ export type Database = {
           order_id?: string
           payment_instructions?: string | null
           product_value?: number | null
+          sent_at?: string | null
           state?: Database["public"]["Enums"]["invoice_state"]
           total_cbm?: number
           total_value?: number
@@ -434,6 +475,7 @@ export type Database = {
           created_at: string
           current_quantity: number
           final_quantity: number | null
+          gross_weight_kg: number
           id: string
           image_path: string | null
           negotiated_price: number
@@ -456,6 +498,7 @@ export type Database = {
           created_at?: string
           current_quantity?: number
           final_quantity?: number | null
+          gross_weight_kg?: number
           id?: string
           image_path?: string | null
           negotiated_price: number
@@ -478,6 +521,7 @@ export type Database = {
           created_at?: string
           current_quantity?: number
           final_quantity?: number | null
+          gross_weight_kg?: number
           id?: string
           image_path?: string | null
           negotiated_price?: number
@@ -512,7 +556,10 @@ export type Database = {
           advance_amount: number | null
           advance_percent: number | null
           container_capacity_cbm: number
+          container_max_weight_kg: number | null
+          container_name: string | null
           container_type_id: string
+          container_warning_percent: number | null
           created_at: string
           customer_id: string
           finalized_at: string | null
@@ -528,7 +575,10 @@ export type Database = {
           advance_amount?: number | null
           advance_percent?: number | null
           container_capacity_cbm: number
+          container_max_weight_kg?: number | null
+          container_name?: string | null
           container_type_id: string
+          container_warning_percent?: number | null
           created_at?: string
           customer_id: string
           finalized_at?: string | null
@@ -544,7 +594,10 @@ export type Database = {
           advance_amount?: number | null
           advance_percent?: number | null
           container_capacity_cbm?: number
+          container_max_weight_kg?: number | null
+          container_name?: string | null
           container_type_id?: string
+          container_warning_percent?: number | null
           created_at?: string
           customer_id?: string
           finalized_at?: string | null
@@ -626,6 +679,7 @@ export type Database = {
           created_at: string
           default_price: number
           description: string | null
+          gross_weight_kg: number | null
           id: string
           image_path: string | null
           is_active: boolean
@@ -643,6 +697,7 @@ export type Database = {
           created_at?: string
           default_price: number
           description?: string | null
+          gross_weight_kg?: number | null
           id?: string
           image_path?: string | null
           is_active?: boolean
@@ -660,6 +715,7 @@ export type Database = {
           created_at?: string
           default_price?: number
           description?: string | null
+          gross_weight_kg?: number | null
           id?: string
           image_path?: string | null
           is_active?: boolean
