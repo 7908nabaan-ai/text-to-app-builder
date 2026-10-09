@@ -36,6 +36,13 @@
       "when": 1791503717201,
       "tag": "0004_category_hierarchy",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791504313345,
+      "tag": "0005_invoice_freight_handling",
+      "breakpoints": true
     }
   ]
 }
