@@ -74,7 +74,7 @@ function HistoryList({ isStaff }: { isStaff: boolean }) {
           customer_id: order.customer_id,
           container_type_id: order.container_type_id,
           container_capacity_cbm: order.container_capacity_cbm,
-          notes: `Repeat of ${order.order_number}`,
+          notes: `Repeat of $<span className="list-number">{index + 1}.</span> {order.order_number}`,
         })
         .select("id")
         .single();
@@ -115,7 +115,7 @@ function HistoryList({ isStaff }: { isStaff: boolean }) {
 
   return (
     <div className="space-y-3">
-      {data.map((order) => (
+      {data.map((order, index) => (
         <Card key={order.id}>
           <CardContent className="flex items-center justify-between gap-3 pt-5">
             <div>

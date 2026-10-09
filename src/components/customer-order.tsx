@@ -124,7 +124,7 @@ export function CustomerOrder({ userId }: { userId: string }) {
   }
 
   const totals = calcOrderTotals(
-    lines.map((line) => ({
+    lines.map((line, index) => ({
       cbmPerCarton: Number(line.cbm_per_carton),
       quantity: line.final_quantity ?? line.current_quantity,
       price: line.negotiated_price,
@@ -172,10 +172,10 @@ export function CustomerOrder({ userId }: { userId: string }) {
       ) : (
         <div className="overflow-x-auto rounded-md border border-border bg-card">
           <table className="w-full min-w-160 text-left text-xs">
-            <thead><tr><th>Product</th><th>Packing</th><th>Qty / CTN</th><th>CBM / CTN</th><th>Total CBM</th><th>Unit price</th><th>Total</th><th>Status</th><th /></tr></thead>
+            <thead><tr><th scope="col">No.</th><th>Product</th><th>Packing</th><th>Qty / CTN</th><th>CBM / CTN</th><th>Total CBM</th><th>Unit price</th><th>Total</th><th>Status</th><th /></tr></thead>
             <tbody>{lines.map((line) => {
               const quantity = line.final_quantity ?? line.current_quantity;
-              return <tr key={line.id}>
+              return <tr key={line.id}><td className="tabular-nums">{index + 1}</td>
                 <td><div className="flex items-center gap-2"><ProductPhoto path={line.image_path} alt={line.product_name} className="h-9 w-9" /><div className="min-w-28"><p className="font-semibold">{line.product_name}</p><p className="text-muted-foreground">{line.sku}</p></div></div></td>
                 <td>{line.unit}</td>
                 <td><div className="flex items-center"><Button size="icon" variant="outline" className="h-7 w-7" disabled={!editable || setQuantity.isPending} onClick={() => setQuantity.mutate({ line, quantity: quantity - 1 })} aria-label={`Decrease ${line.product_name}`}><Minus /></Button><span className="w-9 text-center font-semibold">{quantity}</span><Button size="icon" variant="outline" className="h-7 w-7" disabled={!editable || setQuantity.isPending} onClick={() => setQuantity.mutate({ line, quantity: quantity + 1 })} aria-label={`Increase ${line.product_name}`}><Plus /></Button></div></td>
@@ -184,7 +184,7 @@ export function CustomerOrder({ userId }: { userId: string }) {
                 <td>{editable && <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" disabled={setQuantity.isPending} onClick={() => setQuantity.mutate({ line, quantity: 0 })} aria-label={`Remove ${line.product_name}`}><Trash2 /></Button>}</td>
               </tr>;
             })}</tbody>
-            <tfoot><tr><td colSpan={2} className="font-semibold">Order totals</td><td>{lines.reduce((sum, line) => sum + (line.final_quantity ?? line.current_quantity), 0)}</td><td /><td>{totals.totalCbm.toFixed(3)}</td><td /><td className="font-bold">{formatMoney(totals.totalValue)}</td><td colSpan={2} /></tr></tfoot>
+            <tfoot><tr><td colSpan={3} className="font-semibold">Order totals</td><td>{lines.reduce((sum, line) => sum + (line.final_quantity ?? line.current_quantity), 0)}</td><td /><td>{totals.totalCbm.toFixed(3)}</td><td /><td className="font-bold">{formatMoney(totals.totalValue)}</td><td colSpan={2} /></tr></tfoot>
           </table>
         </div>
       )}

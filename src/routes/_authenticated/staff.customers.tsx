@@ -110,7 +110,7 @@ function CustomersBody() {
         />
       ) : (
         <div className="space-y-3">
-          {filtered.map((customer) => {
+          {filtered.map((customer, index) => {
             const customerOrders = orders.filter((order) => order.customer_id === customer.id);
             const latest = customerOrders[0];
             return (
@@ -119,7 +119,7 @@ function CustomersBody() {
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="font-medium">
-                        {customer.company_name || customer.contact_name || "Customer"}
+                        <span className="list-number">{index + 1}.</span> {customer.company_name || customer.contact_name || "Customer"}
                       </p>
                       <p className="stat-label">
                         {customer.contact_name || "—"}

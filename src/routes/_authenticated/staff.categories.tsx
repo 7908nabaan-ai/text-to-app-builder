@@ -228,12 +228,12 @@ function CategoriesBody() {
         <div className="space-y-3">
           {data
             .filter((c) => !c.parent_id)
-            .map((main) => (
+            .map((main, mainIndex) => (
               <Card key={main.id}>
                 <CardContent className="space-y-3 pt-5">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <p className="font-semibold">{main.name}</p>
+                      <p className="font-semibold"><span className="list-number">{mainIndex + 1}.</span> {main.name}</p>
                       <p className="stat-label">
                         {main.slug} · main category · order {main.sort_order}
                       </p>
@@ -258,13 +258,13 @@ function CategoriesBody() {
                   </div>
                   {data
                     .filter((c) => c.parent_id === main.id)
-                    .map((dept) => (
+                    .map((dept, deptIndex) => (
                       <div
                         key={dept.id}
                         className="ml-4 flex items-center justify-between gap-3 rounded-md border border-border p-3"
                       >
                         <div>
-                          <p className="font-medium">{dept.name}</p>
+                          <p className="font-medium"><span className="list-number">{deptIndex + 1}.</span> {dept.name}</p>
                           <p className="stat-label">
                             {dept.slug} · order {dept.sort_order}
                           </p>

@@ -50,9 +50,9 @@ function PaymentsBody({ userId }: { userId: string }) {
         {data.rows.length === 0 ? <EmptyState title="No submitted orders yet" /> : (
           <div className="overflow-x-auto rounded-md border border-border bg-card">
             <table className="w-full min-w-160 text-left text-xs">
-              <thead><tr><th>Order</th><th>Status</th><th>Value</th><th>Paid</th><th>Balance</th><th>Payment</th></tr></thead>
-              <tbody>{data.rows.map((r) => (
-                <tr key={r.id}>
+              <thead><tr><th scope="col">No.</th><th>Order</th><th>Status</th><th>Value</th><th>Paid</th><th>Balance</th><th>Payment</th></tr></thead>
+              <tbody>{data.rows.map((r, index) => (
+                <tr key={r.id}><td className="tabular-nums">{index + 1}</td>
                   <td><Link to="/orders/$orderId" params={{ orderId: r.id }} className="font-semibold text-primary">{r.order_number}</Link></td>
                   <td>{STATUS_LABELS[r.status]}</td>
                   <td>{money(r.finalValue)}{!r.invoiced && <span className="block text-muted-foreground">estimate</span>}</td>
@@ -70,9 +70,9 @@ function PaymentsBody({ userId }: { userId: string }) {
         {data.payments.length === 0 ? <EmptyState title="No payments recorded yet" /> : (
           <div className="overflow-x-auto rounded-md border border-border bg-card">
             <table className="w-full min-w-140 text-left text-xs">
-              <thead><tr><th>Date</th><th>Order</th><th>Amount</th><th>Method</th><th>Reference</th><th>Status</th></tr></thead>
-              <tbody>{data.payments.map((p) => (
-                <tr key={p.id}><td>{new Date(p.paid_at).toLocaleDateString()}</td><td>{data.orderNumber.get(p.order_id)}</td><td className="font-semibold">{money(Number(p.amount))}</td><td>{p.method ?? "—"}</td><td>{p.reference ?? "—"}</td><td>{p.status}</td></tr>
+              <thead><tr><th scope="col">No.</th><th>Date</th><th>Order</th><th>Amount</th><th>Method</th><th>Reference</th><th>Status</th></tr></thead>
+              <tbody>{data.payments.map((p, index) => (
+                <tr key={p.id}><td className="tabular-nums">{index + 1}</td><td>{new Date(p.paid_at).toLocaleDateString()}</td><td>{data.orderNumber.get(p.order_id)}</td><td className="font-semibold">{money(Number(p.amount))}</td><td>{p.method ?? "—"}</td><td>{p.reference ?? "—"}</td><td>{p.status}</td></tr>
               ))}</tbody>
             </table>
           </div>

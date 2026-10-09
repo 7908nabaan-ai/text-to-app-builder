@@ -200,7 +200,7 @@ function OrderBody({ orderId, isOwner }: { orderId: string; isOwner: boolean }) 
       if (error) throw error;
 
       if (status === "confirmed") {
-        const updates = lines.map((line) =>
+        const updates = lines.map((line, index) =>
           supabase
             .from("order_lines")
             .update({ final_quantity: line.current_quantity })
@@ -319,7 +319,7 @@ function OrderBody({ orderId, isOwner }: { orderId: string; isOwner: boolean }) 
           <CardContent className="space-y-3 pt-5">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <p className="font-medium">{line.product_name}</p>
+                <p className="font-medium"><span className="list-number">{index + 1}.</span> {line.product_name}</p>
                 <p className="stat-label">
                   {line.sku} · requested {line.requested_quantity}
                 </p>

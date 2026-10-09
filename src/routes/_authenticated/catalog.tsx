@@ -78,12 +78,12 @@ function AiFinder({ userId }: { userId: string }) {
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground">{recs.summary}</p>
             {recs.items.length === 0 && <p className="text-sm">No matching products found.</p>}
-            {recs.items.map((r) => {
+            {recs.items.map((r, index) => {
               const p = byId.get(r.id);
               if (!p) return null;
               return (
                 <div key={r.id} className="flex items-center gap-3 rounded-md border border-border p-3">
-                  <div className="min-w-0 flex-1"><p className="font-medium">{p.name}</p><p className="text-sm text-muted-foreground">{r.reason}</p><p className="stat-label">{formatMoney(p.default_price)} · {formatCbm(p.cbm_per_carton)}</p></div>
+                  <div className="min-w-0 flex-1"><p className="font-medium"><span className="list-number">{index + 1}.</span> {p.name}</p><p className="text-sm text-muted-foreground">{r.reason}</p><p className="stat-label">{formatMoney(p.default_price)} · {formatCbm(p.cbm_per_carton)}</p></div>
                   <Button size="sm" onClick={() => add.mutate(p)} disabled={add.isPending}>Add</Button>
                 </div>
               );
