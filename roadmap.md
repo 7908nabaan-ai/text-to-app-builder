@@ -66,3 +66,5 @@
 - [x] Load carton gross weights from Excel into products (557/562 matched)
 - [x] Customers see USD only; MYR switch and amounts hidden for customer role
 - [ ] Notify customer when order exceeds container max CBM or gross weight
+- [x] Notify customer when order exceeds container max CBM or gross weight (DB trigger)
+- [ ] Proforma from confirmed order; invoice linked to order; Mark as sent updates order status
