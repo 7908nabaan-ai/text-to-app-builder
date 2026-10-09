@@ -193,6 +193,7 @@ function OrderBody({ orderId, isOwner }: { orderId: string; isOwner: boolean }) 
         throw new Error("An owner must approve or reject every line before confirming.");
       }
       if (status === "confirmed") {
+        if (!order.customer_approved_at || order.status !== "customer_updated") throw new Error("The customer must approve the negotiated order first.");
         patch.finalized_at = new Date().toISOString();
         patch.is_locked = true;
       }
@@ -200,16 +201,6 @@ function OrderBody({ orderId, isOwner }: { orderId: string; isOwner: boolean }) 
       if (status === "awaiting_customer" || status === "under_review") patch.is_locked = false;
       const { error } = await supabase.from("orders").update(patch).eq("id", orderId);
       if (error) throw error;
-
-      if (status === "confirmed") {
-        const updates = lines.map((line) =>
-          supabase
-            .from("order_lines")
-            .update({ final_quantity: line.current_quantity })
-            .eq("id", line.id),
-        );
-        await Promise.all(updates);
-      }
 
       await logOrderEvent({
         order_id: orderId,
@@ -229,6 +220,8 @@ function OrderBody({ orderId, isOwner }: { orderId: string; isOwner: boolean }) 
       toast.success("Status updated");
       void queryClient.invalidateQueries({ queryKey: ["order", orderId] });
       void queryClient.invalidateQueries({ queryKey: ["staff-orders"] });
+      void queryClient.invalidateQueries({ queryKey: ["order-lines", orderId] });
+      void queryClient.invalidateQueries({ queryKey: ["order-events", orderId] });
     },
     onError: (error: Error) => toast.error(error.message),
   });
@@ -285,15 +278,16 @@ function OrderBody({ orderId, isOwner }: { orderId: string; isOwner: boolean }) 
             </select>
           </div>
           <div className="flex flex-wrap gap-2">
+            <p className="w-full text-sm font-semibold text-primary">{order.customer_approved_at ? "Customer approved · Ready for Sky Plus final approval" : "Customer approval pending"}</p>
             {NEXT_STATUSES.map((status) => (
               <Button
                 key={status}
                 size="sm"
                 variant={order.status === status ? "default" : "outline"}
                 onClick={() => setStatus.mutate(status)}
-                disabled={setStatus.isPending}
+                disabled={setStatus.isPending || (status === "confirmed" && (!order.customer_approved_at || order.status !== "customer_updated" || lines.some((l) => l.approval_status === "pending"))) || (["loading", "shipped", "completed"].includes(status) && !["confirmed", "loading", "shipped", "completed"].includes(order.status))}
               >
-                {STATUS_LABELS[status]}
+                {status === "confirmed" ? "Sky Plus final approval" : status === "awaiting_customer" ? "Send for customer approval" : STATUS_LABELS[status]}
               </Button>
             ))}
           </div>

@@ -72,9 +72,9 @@ function Body() {
       </div>
       <Input className="h-10 max-w-sm" placeholder="Search order or customer" value={term} onChange={(e) => setTerm(e.target.value)} />
       {list.length === 0 ? <EmptyState title={`No ${g.label.toLowerCase()} orders`} /> : (
-        <div className="overflow-x-auto rounded-md border border-border bg-card">
+        <div className="max-h-[65vh] overflow-auto rounded-md border border-border bg-card">
           <table className="w-full min-w-160 text-left text-xs">
-            <thead><tr><th scope="col">No.</th><th>Order</th><th>Customer</th><th>Container</th><th>Cartons</th><th>CBM</th><th>Value</th><th>Status</th><th>Updated</th></tr></thead>
+            <thead className="sticky top-0 z-10 bg-card"><tr><th scope="col">No.</th><th>Order</th><th>Customer</th><th>Container</th><th>Cartons</th><th>CBM</th><th>Value</th><th>Status</th><th>Updated</th></tr></thead>
             <tbody>{list.map((o, index) => {
               const p = who.get(o.customer_id);
               return (

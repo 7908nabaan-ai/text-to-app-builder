@@ -16,6 +16,7 @@ import { STATUS_LABELS, addProductToOrder, createOrder, logOrderEvent, type Orde
 import { LineStatus, NegotiationChat, OrderHeaderCard, RecentChanges, lineStatus } from "@/components/order-panels";
 import { LiveOrderPanel, ProductTile, orderLoad, useCatalogProducts, useFavourites, type CatalogProduct } from "@/components/ordering";
 import { cn } from "@/lib/utils";
+import { CustomerApproval } from "@/components/customer-approval";
 
 type Line = OrderLine & { gross_weight_kg: number };
 
@@ -277,9 +278,9 @@ export function QuickOrder({ userId, orderId, onSelectOrder }: { userId: string;
             <Button size="sm" variant="outline" onClick={() => document.querySelector<HTMLInputElement>('input[aria-label="Search products"]')?.focus()}><Plus className="h-4 w-4" />Add More Products</Button>
           </div>
           {lines.length === 0 ? <EmptyState title="No products yet" description="Search or tap Add on a product above." /> : (
-            <div className="overflow-x-auto rounded-md border border-border">
+            <div className="max-h-[65vh] overflow-auto rounded-md border border-border">
               <table className="w-full min-w-200 text-left text-xs">
-                <thead className="bg-muted/60"><tr><th className="w-10">No.</th><th>Product</th><th>Packing</th><th className="text-center">Qty (CTN)</th><th>CBM / CTN</th><th>Total CBM</th><th>Unit Price</th><th className="text-right">Total</th><th>Status</th><th className="text-center">Action</th></tr></thead>
+                <thead className="sticky top-0 z-10 bg-card"><tr><th className="w-10">No.</th><th>Product</th><th>Packing</th><th className="text-center">Qty (CTN)</th><th>CBM / CTN</th><th>Total CBM</th><th>Unit Price</th><th className="text-right">Total</th><th>Status</th><th className="text-center">Action</th></tr></thead>
                 <tbody>{lines.map((l, i) => {
                   const st = lineStatus(l).label;
                   return (
@@ -320,6 +321,7 @@ export function QuickOrder({ userId, orderId, onSelectOrder }: { userId: string;
             <Button variant="outline" disabled={lines.length === 0 || setQty.isPending} onClick={() => { if (confirm("Remove all products from this order?")) lines.forEach((l) => setQty.mutate({ line: l, quantity: 0 })); }}><Trash2 className="h-4 w-4" />Clear Order</Button>
             <Button variant="outline" className="ml-auto border-primary text-primary" onClick={() => toast.success("Order saved — changes are saved automatically")}>Save Order</Button>
             <Button disabled={lines.length === 0 || submit.isPending} onClick={() => submit.mutate()}>{order.status === "draft" ? "Submit to Sky Plus" : "Send my response"}</Button>
+            <CustomerApproval order={order} disabled={lines.length === 0 || submit.isPending || setQty.isPending || add.isPending} />
             <Button className="bg-success text-primary-foreground hover:bg-success/90" onClick={() => document.getElementById("order-chat")?.scrollIntoView({ behavior: "smooth" })}><MessageCircle className="h-4 w-4" />Message Sky Plus</Button>
           </div>
         </section>

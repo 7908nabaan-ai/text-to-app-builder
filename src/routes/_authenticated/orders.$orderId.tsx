@@ -10,6 +10,7 @@ import { ProductPhoto } from "@/components/product-photo";
 import { LiveOrderPanel } from "@/components/ordering";
 import { LineStatus, NegotiationChat, RecentChanges, StatusTimeline } from "@/components/order-panels";
 import { OrderFinance } from "@/components/order-finance";
+import { CustomerApproval } from "@/components/customer-approval";
 import { useCurrency } from "@/lib/currency";
 import { formatKg } from "@/lib/calc";
 import { STATUS_LABELS, type OrderLine } from "@/lib/orders";
@@ -64,6 +65,7 @@ export function OrderDetail({ orderId, isStaff }: { orderId: string; isStaff: bo
           <Badge className="ml-auto">{STATUS_LABELS[order.status] ?? order.status}</Badge>
           {editable && <Button asChild size="sm"><Link to="/catalog" search={{ order: order.id }}>{order.status === "draft" ? "Continue ordering" : "Respond to proposal"}</Link></Button>}
           {isStaff && <Button asChild size="sm" variant="outline"><Link to="/staff/orders/$orderId" params={{ orderId: order.id }}>Open staff review</Link></Button>}
+          {!isStaff && <CustomerApproval order={order} disabled={lines.length === 0} />}
         </div>
 
         <section className="rounded-md border border-border bg-card p-4">
@@ -78,9 +80,9 @@ export function OrderDetail({ orderId, isStaff }: { orderId: string; isStaff: bo
         <section className="space-y-2">
           <h2 className="font-display text-lg font-bold">{done ? "Final products" : "Negotiation"}</h2>
           <p className="text-xs text-muted-foreground">Your original request, the Sky Plus proposal, your response and the final confirmed quantity — every step is kept.</p>
-          <div className="overflow-x-auto rounded-md border border-border bg-card">
+          <div className="max-h-[65vh] overflow-auto rounded-md border border-border bg-card">
             <table className="w-full min-w-180 text-left text-xs">
-              <thead><tr><th scope="col">No.</th><th>Product / Order</th><th>Packing</th><th>Quantity</th><th>Your response</th><th>Final</th><th>Weight</th><th>Price</th><th>Total</th><th>Status</th></tr></thead>
+              <thead className="sticky top-0 z-10 bg-card"><tr><th scope="col">No.</th><th>Product / Order</th><th>Packing</th><th>Quantity</th><th>Your response</th><th>Final</th><th>Weight</th><th>Price</th><th>Total</th><th>Status</th></tr></thead>
               <tbody>{lines.map((l, index) => {
                 const qty = l.final_quantity ?? l.current_quantity;
                 return (

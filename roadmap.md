@@ -1,4 +1,7 @@
 # Sky Plus roadmap
+- [x] Keep order-list column headers visible while scrolling; browser verified fixed header position during internal scrolling
+
+- [x] Enforce customer acceptance followed by Sky Plus final approval; database safeguards installed, staff confirmation gating checked in browser, calculation tests pass (live customer acceptance not exercised)
 
 - [x] Show each customer item immediately above its Sky Plus proposal in staff review and customer order details; preserved calculations and editing behavior; verified four paired items on both pages in signed-in preview
 
