@@ -64,6 +64,13 @@
       "when": 1791508473832,
       "tag": "0008_allow_draft_requested_qty",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791508646038,
+      "tag": "0009_order_chat_availability",
+      "breakpoints": true
     }
   ]
 }

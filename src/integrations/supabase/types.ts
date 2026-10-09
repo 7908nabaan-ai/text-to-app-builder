@@ -469,6 +469,7 @@ export type Database = {
           approval_status: string
           approved_at: string | null
           approved_by: string | null
+          availability: string
           catalog_price: number
           category_name: string | null
           cbm_per_carton: number
@@ -492,6 +493,7 @@ export type Database = {
           approval_status?: string
           approved_at?: string | null
           approved_by?: string | null
+          availability?: string
           catalog_price: number
           category_name?: string | null
           cbm_per_carton: number
@@ -515,6 +517,7 @@ export type Database = {
           approval_status?: string
           approved_at?: string | null
           approved_by?: string | null
+          availability?: string
           catalog_price?: number
           category_name?: string | null
           cbm_per_carton?: number
@@ -547,6 +550,41 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          order_id: string
+          sender_id: string
+          sender_role: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          order_id: string
+          sender_id?: string
+          sender_role?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          order_id?: string
+          sender_id?: string
+          sender_role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_messages_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
             referencedColumns: ["id"]
           },
         ]

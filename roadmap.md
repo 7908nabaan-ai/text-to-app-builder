@@ -38,3 +38,5 @@
 - [ ] Negotiation timeline: request → Sky Plus proposal → customer response → final
 - [ ] Favourite products, recently / frequently ordered in Quick Order
 - [ ] Larger product images with packing, CBM, weight, USD + MYR price
+- [ ] Ordering page 3-column: catalogue + categories + current order center; summary, status timeline, negotiation chat, recent changes right
+- [ ] Line status colours (available / updated by Sky Plus / pre-order / unavailable) + bottom totals bar
