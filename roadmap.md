@@ -1,5 +1,7 @@
 # Sky Plus roadmap
 
+- [x] Add invited customer username/password/confirmation signup and visible Create account / Sign in choices; invitation restriction checked in browser, password matching checked in code (live account creation not tested)
+
 - [x] Check invitation Google sign-in configuration and account selection while preserving customer records (provider enabled; actual Google consent requires customer's account)
 - [x] Check invitation sign-in on desktop, tablet and phone previews
 
