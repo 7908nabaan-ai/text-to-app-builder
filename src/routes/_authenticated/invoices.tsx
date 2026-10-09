@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { EmptyState, Page } from "@/components/page";
@@ -147,9 +147,12 @@ function InvoiceDetail({
   };
   return (
     <div className="space-y-3 border-t pt-3">
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <Button size="sm" variant="outline" onClick={() => void exportPdf()}>Download PDF</Button>
         <Button size="sm" variant="outline" onClick={() => void exportExcel()}>Download Excel</Button>
+        <Button size="sm" variant="outline" asChild>
+          <Link to="/orders/$orderId" params={{ orderId: invoice.order_id }}>View order</Link>
+        </Button>
       </div>
       <p className="text-sm text-muted-foreground">
         {invoice.container_code ?? "Container"} · {formatCbm(Number(invoice.total_cbm))} · advance{" "}
