@@ -99,7 +99,7 @@ export function ProductTile({ product, onAdd, adding, favourite, onFavourite, qu
         <p className="truncate text-[10px] text-muted-foreground">{product.sku} · {product.unit}</p>
         <p className="text-[10px] text-muted-foreground">{formatCbm(Number(product.cbm_per_carton))} · {product.gross_weight_kg ? formatKg(Number(product.gross_weight_kg)) : "weight —"}</p>
         <p className="text-sm font-bold">{usd(Number(product.default_price))}</p>
-        <p className="-mt-1 text-[10px] text-muted-foreground">{myr(Number(product.default_price))}</p>
+        {!isCustomer && <p className="-mt-1 text-[10px] text-muted-foreground">{myr(Number(product.default_price))}</p>}
         {onAdd && (
           <Button size="sm" className="mt-auto h-8 w-full text-xs" onClick={onAdd} disabled={adding}>
             <Plus className="h-3.5 w-3.5" />{quantity ? `Add (${quantity} in order)` : "Add"}
@@ -128,7 +128,7 @@ export function orderLoad(order: PanelOrder, lines: PanelLine[]) {
 
 /** Always-visible container summary; updates as soon as the order lines change. */
 export function LiveOrderPanel({ order, lines, children, sticky = true }: { order: PanelOrder; lines: PanelLine[]; children?: React.ReactNode; sticky?: boolean }) {
-  const { usd, myr } = useCurrency();
+  const { usd, myr, isCustomer } = useCurrency();
   const t = orderLoad(order, lines);
   const row = (label: string, value: string, strong = false) => (
     <div className="flex justify-between gap-2 text-xs"><span className="text-muted-foreground">{label}</span><span className={strong ? "font-bold" : "font-semibold"}>{value}</span></div>
