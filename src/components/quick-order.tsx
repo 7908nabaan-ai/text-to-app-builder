@@ -320,7 +320,7 @@ export function QuickOrder({ userId, orderId, onSelectOrder }: { userId: string;
             <Button variant="outline" disabled={lines.length === 0 || setQty.isPending} onClick={() => { if (confirm("Remove all products from this order?")) lines.forEach((l) => setQty.mutate({ line: l, quantity: 0 })); }}><Trash2 className="h-4 w-4" />Clear Order</Button>
             <Button variant="outline" className="ml-auto border-primary text-primary" onClick={() => toast.success("Order saved — changes are saved automatically")}>Save Order</Button>
             <Button disabled={lines.length === 0 || submit.isPending} onClick={() => submit.mutate()}>{order.status === "draft" ? "Submit to Sky Plus" : "Send my response"}</Button>
-            <Button variant="success" onClick={() => document.getElementById("order-chat")?.scrollIntoView({ behavior: "smooth" })}><MessageCircle className="h-4 w-4" />Message Sky Plus</Button>
+            <Button className="bg-success text-primary-foreground hover:bg-success/90" onClick={() => document.getElementById("order-chat")?.scrollIntoView({ behavior: "smooth" })}><MessageCircle className="h-4 w-4" />Message Sky Plus</Button>
           </div>
         </section>
       </div>
