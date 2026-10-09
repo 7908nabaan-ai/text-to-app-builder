@@ -41,6 +41,7 @@ type Row = {
   length: number | null;
   width: number | null;
   height: number | null;
+  weight?: number | null;
   imageName: string;
   image: Blob | null;
   errors: string[];
