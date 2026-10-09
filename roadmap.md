@@ -58,7 +58,7 @@
 - [x] Container choice before ordering, quick order, live CBM/weight panel, USD/MYR switch
 - [x] Order detail with negotiation chat, status timeline, line availability colours
 - [x] Staff: orders grouped by stage, availability + container change, container/weight/MYR settings, product weight
-- [ ] Customer Workspace tabs (staff)
+- [x] Customer Workspace tabs (staff)
 - [ ] Read-only History module + comprehensive Reports with print
 - [ ] Owner dashboard metrics
-- [ ] Invoice PI/CI split with sent/paid status + print
+- [x] Invoice PI/CI split with sent/paid status + print
