@@ -15,3 +15,4 @@
 - Store signup usernames as non-privileged account metadata and retain email as the authentication credential; this preserves invitation email matching without exposing customer email lookup.
 - Enforce customer acceptance and Sky Plus final confirmation through database triggers, with a shared customer approval control; this prevents bypasses and atomically snapshots final quantities.
 - Reuse BottomTotals beneath bounded order-item scroll areas for customer and staff detail views so aggregate totals stay visible without changing calculation logic.
+- Keep agent-integration (MCP) tools in src/lib/mcp/, one tool per file, using the caller's OAuth token so database access rules apply; never use admin access there.
