@@ -12,9 +12,9 @@
   },
   "mcp": {
     "server": {
-      "name": "text-to-app-builder",
+      "name": "skyplusb2b",
       "version": "0.1.0",
-      "title": "Text to App Builder"
+      "title": "skyplusb2b"
     },
     "tools": [
       {
