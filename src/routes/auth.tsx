@@ -11,9 +11,10 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Ship } from "lucide-react";
 import { BackButton } from "@/components/back-button";
+import { oauthReturnPath } from "@/lib/oauth-return-path";
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: z.object({ invite: z.string().optional() }),
+  validateSearch: z.object({ invite: z.string().optional(), next: z.string().optional() }),
   head: () => ({
     meta: [
       { property: "og:type", content: "website" },
@@ -37,7 +38,9 @@ type Mode = "signin" | "signup" | "reset";
 
 function AuthPage() {
   const navigate = useNavigate();
-  const { invite: inviteToken } = Route.useSearch();
+  const { invite: inviteToken, next: rawNext } = Route.useSearch();
+  const nextPath = rawNext ? oauthReturnPath(rawNext) : null;
+  const goNext = (replace = false) => (nextPath && nextPath !== "/" ? window.location.assign(nextPath) : navigate({ to: "/dashboard", replace }));
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -54,10 +57,10 @@ function AuthPage() {
 
   useEffect(() => {
     void supabase.auth.getUser().then(({ data }) => {
-      if (data.user) navigate({ to: "/dashboard", replace: true });
+      if (data.user) void goNext(true);
     });
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN" && session) navigate({ to: "/dashboard", replace: true });
+      if (event === "SIGNED_IN" && session) void goNext(true);
     });
     return () => sub.subscription.unsubscribe();
   }, [navigate]);
@@ -127,13 +130,13 @@ function AuthPage() {
       if (mode === "signin") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        navigate({ to: "/dashboard" });
+        void goNext();
       } else if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
           email: invite?.email ?? email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/auth`,
+            emailRedirectTo: nextPath && nextPath !== "/" ? new URL(nextPath, window.location.origin).href : `${window.location.origin}/auth`,
             data: { username: username.trim(), contact_name: contactName.trim() || username.trim(), company_name: company, phone },
           },
         });
@@ -163,7 +166,7 @@ function AuthPage() {
     setOauthError(null);
     try {
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: `${window.location.origin}/auth${inviteToken ? `?invite=${encodeURIComponent(inviteToken)}` : ""}`,
+        redirect_uri: nextPath && nextPath !== "/" ? new URL(nextPath, window.location.origin).href : `${window.location.origin}/auth${inviteToken ? `?invite=${encodeURIComponent(inviteToken)}` : ""}`,
         extraParams: {
           prompt: "select_account",
           ...(invite?.valid && invite.email ? { login_hint: invite.email } : {}),
@@ -174,7 +177,7 @@ function AuthPage() {
       const { data, error } = await supabase.auth.getUser();
       if (error) throw error;
       if (!data.user) throw new Error("Google sign-in did not complete. Please try again.");
-      await navigate({ to: "/dashboard" });
+      await goNext();
     } catch (error) {
       const msg = error instanceof Error ? error.message : String((error as { message?: string })?.message ?? "");
       setOauthError(

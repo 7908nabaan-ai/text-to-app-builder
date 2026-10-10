@@ -34,9 +34,9 @@ export const Route = createFileRoute("/.lovable/oauth/consent")({
     const next = location.pathname + location.searchStr;
     if (!data.session) throw redirect({ to: "/auth", search: { next } });
   },
-  loader: async ({ location }) => {
-    const id = new URLSearchParams(location.search as unknown as string).get("authorization_id")
-      ?? (location.search as { authorization_id?: string }).authorization_id ?? "";
+  loaderDeps: ({ search }) => ({ id: search.authorization_id }),
+  loader: async ({ deps }) => {
+    const id = deps.id;
     const { data, error } = await oauth().getAuthorizationDetails(id);
     if (error) throw new Error(error.message);
     const immediate = data?.redirect_url ?? data?.redirect_to;
