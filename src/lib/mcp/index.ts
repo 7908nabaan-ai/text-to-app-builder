@@ -7,8 +7,8 @@ import getOrder from "./tools/get-order";
 const projectRef = import.meta.env["VITE_SUPABASE_PROJECT_ID"] ?? "project-ref-unset";
 
 export default defineMcp({
-  name: "text-to-app-builder",
-  title: "Text to App Builder",
+  name: "skyplusb2b",
+  title: "skyplusb2b",
   version: "0.1.0",
   instructions:
     "Sky Plus wholesale container ordering. Search the catalogue, list your orders and read order details. All results respect the signed-in account's access.",
