@@ -92,6 +92,13 @@
       "when": 1791521702908,
       "tag": "0012_mark_invoice_sent_advances_order_status",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1791686852905,
+      "tag": "0013_allow_customer_edits_during_negotiation",
+      "breakpoints": true
     }
   ]
 }
