@@ -29,7 +29,7 @@ export function Page({
   const isStaff = role === "staff";
 
   return (
-    <AppShell isStaff={isStaff} title={title}>
+    <AppShell isStaff={isStaff} title={title} email={user.email ?? ""} accountType={accountType ?? (isStaff ? "admin" : "customer")}>
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="mb-1 text-xs text-muted-foreground">Sky Plus / {title}</p>

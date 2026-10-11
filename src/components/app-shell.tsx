@@ -39,12 +39,13 @@ const staffNav: NavItem[] = [
   { to: "/notifications", label: "Notifications", icon: Bell },
 ];
 
-export function AppShell({ children, isStaff, title }: { children: ReactNode; isStaff: boolean; title?: string }) {
+export function AppShell({ children, isStaff, title, email = "", accountType = "customer" }: { children: ReactNode; isStaff: boolean; title?: string; email?: string; accountType?: "owner" | "admin" | "customer" }) {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [menuOpen, setMenuOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const primary = isStaff ? staffNav : customerNav;
+  const primary = isStaff ? staffNav.filter((item) => item.to !== "/staff/settings" || accountType === "owner") : customerNav;
+  const roleLabel = accountType === "owner" ? "Owner" : accountType === "admin" ? "Admin" : "Customer";
   const queryClient = useQueryClient();
   const signOut = async () => {
     await queryClient.cancelQueries();
@@ -73,7 +74,13 @@ export function AppShell({ children, isStaff, title }: { children: ReactNode; is
         <div className="ml-auto flex items-center gap-1 px-3 sm:gap-3">
           <Link to="/dashboard" className="hidden items-center gap-2 text-sm md:flex"><Ship className="h-4 w-4" />Home</Link>
           <Link to="/notifications" aria-label="Notifications" className="rounded-md p-2 hover:bg-sidebar-accent"><Bell className="h-4 w-4" /></Link>
-          <span className="hidden items-center gap-2 text-sm xl:flex"><UserRound className="h-7 w-7 rounded-full bg-sidebar-accent p-1.5" />{isStaff ? "Staff account" : "Customer account"}</span>
+          <span className="flex min-w-0 items-center gap-2 text-sm" title={`${email} · ${roleLabel}`}>
+            <UserRound className="hidden h-7 w-7 shrink-0 rounded-full bg-sidebar-accent p-1.5 sm:block" />
+            <span className="flex min-w-0 flex-col leading-tight">
+              <span className="max-w-[9rem] truncate text-xs sm:max-w-[14rem] sm:text-sm">{email}</span>
+              <span className={cn("w-fit rounded px-1.5 text-[10px] font-semibold uppercase", accountType === "customer" ? "bg-sidebar-accent text-sidebar-foreground" : "bg-sidebar-primary text-sidebar-primary-foreground")}>{roleLabel}</span>
+            </span>
+          </span>
           <Button variant="ghost" size="icon" onClick={signOut} aria-label="Sign out" title="Sign out" className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground"><LogOut /></Button>
           <Button variant="ghost" size="icon" aria-label={menuOpen ? "Close menu" : "Open menu"} onClick={() => setMenuOpen(!menuOpen)} className="text-sidebar-foreground hover:bg-sidebar-accent lg:hidden">{menuOpen ? <X /> : <Menu />}</Button>
         </div>

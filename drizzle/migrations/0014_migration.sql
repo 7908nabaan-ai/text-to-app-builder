@@ -1,0 +1,1 @@
+ALTER TABLE public.customer_invites ALTER COLUMN expires_at SET DEFAULT now() + interval '24 hours';
