@@ -109,69 +109,54 @@ function CustomersBody() {
           description="Customers appear here once they create an account."
         />
       ) : (
-        <div className="space-y-3">
-          {filtered.map((customer, index) => {
-            const customerOrders = orders.filter((order) => order.customer_id === customer.id);
-            const latest = customerOrders[0];
-            return (
-              <Card key={customer.id}>
-                <CardContent className="space-y-3 pt-5">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="font-medium">
-                        <span className="list-number">{index + 1}.</span> {customer.company_name || customer.contact_name || "Customer"}
-                      </p>
-                      <p className="stat-label">
-                        {customer.contact_name || "—"}
-                        {customer.email ? ` · ${customer.email}` : ""}
-                      </p>
-                      {(customer.shipping_destination || customer.shipping_country) && (
-                        <p className="text-sm text-muted-foreground">
-                          {[customer.shipping_destination, customer.shipping_country]
-                            .filter(Boolean)
-                            .join(", ")}
-                        </p>
-                      )}
-                    </div>
-                    <Badge variant="secondary">{customerOrders.length} orders</Badge>
-                  </div>
-
-                  {latest && (
-                    <Link to="/staff/orders/$orderId" params={{ orderId: latest.id }}>
-                      <div className="flex items-center justify-between rounded-md border border-border px-3 py-2 text-sm">
-                        <span className="font-medium">{latest.order_number}</span>
-                        <span className="text-muted-foreground">
-                          {STATUS_LABELS[latest.status] ?? latest.status}
-                        </span>
+        <div className="overflow-x-auto rounded-lg border border-border bg-card">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/50 text-left text-xs text-muted-foreground">
+              <tr>
+                <th className="px-3 py-2">No.</th>
+                <th className="px-3 py-2">Customer</th>
+                <th className="px-3 py-2">Contact & email</th>
+                <th className="px-3 py-2">Destination</th>
+                <th className="px-3 py-2">Orders</th>
+                <th className="px-3 py-2">Latest order</th>
+                <th className="px-3 py-2 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((customer, index) => {
+                const customerOrders = orders.filter((order) => order.customer_id === customer.id);
+                const latest = customerOrders[0];
+                return (
+                  <tr key={customer.id} className="whitespace-nowrap border-t border-border">
+                    <td className="px-3 py-2"><span className="list-number">{index + 1}.</span></td>
+                    <td className="px-3 py-2 font-medium">{customer.company_name || customer.contact_name || "Customer"}</td>
+                    <td className="px-3 py-2 text-muted-foreground">{customer.contact_name || "—"}{customer.email ? ` · ${customer.email}` : ""}</td>
+                    <td className="px-3 py-2 text-muted-foreground">{[customer.shipping_destination, customer.shipping_country].filter(Boolean).join(", ") || "—"}</td>
+                    <td className="px-3 py-2"><Badge variant="secondary">{customerOrders.length}</Badge></td>
+                    <td className="px-3 py-2">
+                      {latest ? (
+                        <Link to="/staff/orders/$orderId" params={{ orderId: latest.id }} className="hover:underline">
+                          <span className="font-medium">{latest.order_number}</span>{" "}
+                          <span className="text-muted-foreground">{STATUS_LABELS[latest.status] ?? latest.status}</span>
+                        </Link>
+                      ) : "—"}
+                    </td>
+                    <td className="px-3 py-2">
+                      <div className="flex justify-end gap-1">
+                        <Button asChild size="sm"><Link to="/staff/customers/$customerId" params={{ customerId: customer.id }}>Workspace</Link></Button>
+                        {whatsappLink(customer.phone) && (
+                          <Button asChild size="sm" variant="outline"><a href={whatsappLink(customer.phone)!} target="_blank" rel="noopener noreferrer">WhatsApp</a></Button>
+                        )}
+                        {telLink(customer.phone) && (
+                          <Button asChild size="sm" variant="outline"><a href={telLink(customer.phone)!}>Call</a></Button>
+                        )}
                       </div>
-                    </Link>
-                  )}
-
-                  <div className="flex flex-wrap gap-2">
-                    <Button asChild size="sm">
-                      <Link to="/staff/customers/$customerId" params={{ customerId: customer.id }}>Open workspace</Link>
-                    </Button>
-                    {whatsappLink(customer.phone) && (
-                      <Button asChild size="sm" variant="outline">
-                        <a
-                          href={whatsappLink(customer.phone)!}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          WhatsApp
-                        </a>
-                      </Button>
-                    )}
-                    {telLink(customer.phone) && (
-                      <Button asChild size="sm" variant="outline">
-                        <a href={telLink(customer.phone)!}>Call</a>
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
