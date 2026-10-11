@@ -47,7 +47,7 @@ function StaffOrderPage() {
     <Page title="Order review">
       {({ isStaff, accountType }) =>
         isStaff ? (
-          <OrderBody orderId={orderId} isOwner={accountType === "owner"} />
+          <OrderBody orderId={orderId} isOwner={accountType === "owner" || accountType === "admin"} />
         ) : (
           <EmptyState title="Staff only" description="This page is for Sky Plus staff." />
         )

@@ -139,7 +139,7 @@ function InvitationReady({
         </div>
         <p className="text-xs text-muted-foreground">
           Send this link by WhatsApp or email. It opens the sign-up page with the email filled in,
-          works once, and expires in 14 days.
+          works once, and expires in 24 hours.
         </p>
       </CardContent>
     </Card>

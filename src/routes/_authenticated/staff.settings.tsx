@@ -37,11 +37,11 @@ type SettingsForm = {
 function SettingsPage() {
   return (
     <Page title="Settings" description="Company profile, contact channels and containers.">
-      {({ isStaff }) =>
-        isStaff ? (
+      {({ accountType }) =>
+        accountType === "owner" ? (
           <SettingsBody />
         ) : (
-          <EmptyState title="Staff only" description="This page is for Sky Plus staff." />
+          <EmptyState title="Owner only" description="Only the Sky Plus owner can change settings." />
         )
       }
     </Page>
