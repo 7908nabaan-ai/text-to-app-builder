@@ -17,6 +17,7 @@ export type Database = {
       app_settings: {
         Row: {
           address: string | null
+          ai_suggestions_enabled: boolean
           company_name: string
           contact_email: string | null
           currency: string
@@ -29,6 +30,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          ai_suggestions_enabled?: boolean
           company_name?: string
           contact_email?: string | null
           currency?: string
@@ -41,6 +43,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          ai_suggestions_enabled?: boolean
           company_name?: string
           contact_email?: string | null
           currency?: string
@@ -402,6 +405,56 @@ export type Database = {
           },
         ]
       }
+      order_documents: {
+        Row: {
+          created_at: string
+          customer_id: string
+          file_name: string
+          file_path: string
+          id: string
+          mime_type: string | null
+          order_id: string
+          size_bytes: number | null
+          uploaded_by: string
+          uploader_role: string
+          visibility: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          file_name: string
+          file_path: string
+          id?: string
+          mime_type?: string | null
+          order_id: string
+          size_bytes?: number | null
+          uploaded_by: string
+          uploader_role?: string
+          visibility?: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          file_name?: string
+          file_path?: string
+          id?: string
+          mime_type?: string | null
+          order_id?: string
+          size_bytes?: number | null
+          uploaded_by?: string
+          uploader_role?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_documents_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_events: {
         Row: {
           actor_id: string | null
@@ -466,6 +519,8 @@ export type Database = {
       }
       order_lines: {
         Row: {
+          added_by_staff: boolean
+          agreed_quantity: number | null
           approval_status: string
           approved_at: string | null
           approved_by: string | null
@@ -475,11 +530,13 @@ export type Database = {
           cbm_per_carton: number
           created_at: string
           current_quantity: number
+          customer_proposed_qty: number | null
           final_quantity: number | null
           gross_weight_kg: number
           id: string
           image_path: string | null
           negotiated_price: number
+          negotiation_status: string
           order_id: string
           product_id: string | null
           product_name: string
@@ -490,6 +547,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          added_by_staff?: boolean
+          agreed_quantity?: number | null
           approval_status?: string
           approved_at?: string | null
           approved_by?: string | null
@@ -499,11 +558,13 @@ export type Database = {
           cbm_per_carton: number
           created_at?: string
           current_quantity?: number
+          customer_proposed_qty?: number | null
           final_quantity?: number | null
           gross_weight_kg?: number
           id?: string
           image_path?: string | null
           negotiated_price: number
+          negotiation_status?: string
           order_id: string
           product_id?: string | null
           product_name: string
@@ -514,6 +575,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          added_by_staff?: boolean
+          agreed_quantity?: number | null
           approval_status?: string
           approved_at?: string | null
           approved_by?: string | null
@@ -523,11 +586,13 @@ export type Database = {
           cbm_per_carton?: number
           created_at?: string
           current_quantity?: number
+          customer_proposed_qty?: number | null
           final_quantity?: number | null
           gross_weight_kg?: number
           id?: string
           image_path?: string | null
           negotiated_price?: number
+          negotiation_status?: string
           order_id?: string
           product_id?: string | null
           product_name?: string
@@ -558,6 +623,7 @@ export type Database = {
         Row: {
           body: string
           created_at: string
+          document_id: string | null
           id: string
           order_id: string
           sender_id: string
@@ -566,6 +632,7 @@ export type Database = {
         Insert: {
           body: string
           created_at?: string
+          document_id?: string | null
           id?: string
           order_id: string
           sender_id?: string
@@ -574,12 +641,20 @@ export type Database = {
         Update: {
           body?: string
           created_at?: string
+          document_id?: string | null
           id?: string
           order_id?: string
           sender_id?: string
           sender_role?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "order_messages_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "order_documents"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "order_messages_order_id_fkey"
             columns: ["order_id"]
@@ -823,6 +898,24 @@ export type Database = {
         }
         Relationships: []
       }
+      user_pins: {
+        Row: {
+          pin_hash: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          pin_hash: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          pin_hash?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -849,6 +942,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cancel_order: {
+        Args: { _order_id: string; _reason?: string }
+        Returns: undefined
+      }
+      check_pin: { Args: { _pin: string }; Returns: boolean }
+      delete_draft_order: { Args: { _order_id: string }; Returns: undefined }
+      has_pin: { Args: never; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -869,6 +969,20 @@ export type Database = {
         }
         Returns: string
       }
+      negotiate_line: {
+        Args: {
+          _action: string
+          _line_id: string
+          _note?: string
+          _quantity?: number
+        }
+        Returns: undefined
+      }
+      remove_line_with_pin: {
+        Args: { _line_id: string; _pin: string }
+        Returns: undefined
+      }
+      set_pin: { Args: { _pin: string }; Returns: undefined }
     }
     Enums: {
       app_role: "staff" | "customer" | "owner" | "admin"
@@ -884,6 +998,7 @@ export type Database = {
         | "loading"
         | "shipped"
         | "completed"
+        | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1024,6 +1139,7 @@ export const Constants = {
         "loading",
         "shipped",
         "completed",
+        "cancelled",
       ],
     },
   },
